@@ -6,12 +6,14 @@ import 'package:get/get.dart';
 import 'package:invoice/setup.dart';
 import 'package:invoice/utils/request.dart';
 import 'package:invoice/utils/route_constrant.dart';
-import 'package:invoice/views/home_screen/home_page.dart';
-import 'package:invoice/views/login/login.dart';
 import 'package:invoice/views/not_found_screen.dart';
 import 'package:invoice/views/root_screen.dart';
 import 'package:invoice/views/splash_screen.dart';
 import 'package:url_strategy/url_strategy.dart';
+
+import 'utils/theme.dart';
+import 'views/login/login.dart';
+import 'widgets/carousel_slider.dart';
 
 Future<void> main() async {
   if (!GetPlatform.isWeb) {
@@ -41,11 +43,8 @@ class MyApp extends StatelessWidget {
       debugShowMaterialGrid: false,
       title: 'Invoice Manager',
       color: Colors.white,
-      theme: ThemeData(
-          colorSchemeSeed: const Color(0xff8FBEFF),
-          scaffoldBackgroundColor: Color(0xffF9F9F9),
-          brightness: Brightness.light,
-          fontFamily: 'Inter'),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
       getPages: [
         GetPage(
@@ -53,12 +52,12 @@ class MyApp extends StatelessWidget {
             page: () => const SplashScreen(),
             transition: Transition.zoom),
         GetPage(
-            name: RouteHandler.HOME,
-            page: () => const HomePage(),
-            transition: Transition.zoom),
-        GetPage(
             name: RouteHandler.LOGIN,
             page: () => const LoginScreen(),
+            transition: Transition.cupertino),
+        GetPage(
+            name: RouteHandler.INTRO,
+            page: () => const SliderIntroduction(),
             transition: Transition.cupertino),
         GetPage(
             name: RouteHandler.HOME,

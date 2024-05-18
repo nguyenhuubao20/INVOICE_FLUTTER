@@ -1,8 +1,8 @@
 // import 'package:deer_coffee/view_models/account_view_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:invoice/utils/theme.dart';
+
+import '../../utils/route_constrant.dart';
 
 enum Language {
   Vietnamese,
@@ -53,203 +53,79 @@ class _LoginScreenState extends State<LoginScreen> {
       autovalidateMode: AutovalidateMode.onUserInteraction,
       key: phoneKey,
       child: Scaffold(
-        resizeToAvoidBottomInset:
-            false, // Không cho phép resize khi bàn phím xuất hiện
-        body: Stack(
+        resizeToAvoidBottomInset: false,
+        body: Column(
           children: [
-            Container(
-              height: 240,
-              // decoration: const BoxDecoration(
-              //   image: DecorationImage(
-              //     image: AssetImage('assets/images/image.png'),
-              //     fit: BoxFit.cover,
-              //   ),
-              // ),
-            ),
-            Column(
+            const SizedBox(height: 50),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(25.0),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Column(
-                            children: [
-                              Container(
-                                child: IconButton(
-                                  icon: const Icon(
-                                    Icons.cancel,
-                                    color: Colors.white,
-                                    size: 30,
-                                  ),
-                                  onPressed: () {
-                                    Get.back();
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(
-                  height: 100,
-                ),
-                Expanded(
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(20),
-                        topRight: Radius.circular(20),
-                      ),
-                      color: Colors.white,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 20),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        const Text.rich(
-                          TextSpan(children: [
-                            TextSpan(
-                                text: "Chào mừng bạn đến với ",
-                                style: TextStyle(color: Colors.grey)),
-                          ]),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Text(
-                          "Deer Coffee",
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall!
-                              .copyWith(
-                                fontSize: 35,
-                                fontWeight: FontWeight.bold,
-                                color: ThemeColor.primary,
-                              ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: Get.width * 0.15,
-                            vertical: 20.0,
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextFormField(
-                                  controller: phoneNumber,
-                                  maxLengthEnforcement: MaxLengthEnforcement
-                                      .truncateAfterCompositionEnds,
-                                  enableSuggestions: false,
-                                  maxLength: 10,
-                                  // onChanged: (value) {
-                                  //   phoneKey.currentState?.validate();
-                                  // },
-                                  onSaved: (value) {
-                                    phoneKey.currentState?.validate();
-                                  },
-                                  validator: (value) {
-                                    if (value!.isEmpty) {
-                                      return "Bạn đang để trống số điện thoại";
-                                    } else if (!RegExp(
-                                            '(01|02|03|05|07|08|09|01[2|6|8|9])+([0-9]{8})')
-                                        .hasMatch(value)) {
-                                      return "Số điện thoại không hợp lệ";
-                                    } else {
-                                      return null;
-                                    }
-                                  },
-                                  keyboardType: TextInputType.number,
-                                  decoration: InputDecoration(
-                                      hintText: "Số điện thoại",
-                                      hintStyle: Get.textTheme.bodyMedium,
-                                      floatingLabelBehavior:
-                                          FloatingLabelBehavior.never,
-                                      filled: true,
-                                      isDense: true,
-                                      labelStyle: Get.textTheme.labelLarge,
-                                      fillColor:
-                                          Get.theme.colorScheme.background,
-                                      prefixIcon: Icon(
-                                        Icons.phone,
-                                        color:
-                                            Get.theme.colorScheme.onBackground,
-                                      ),
-                                      suffixIcon: IconButton(
-                                        onPressed: () {
-                                          phoneNumber.text = "";
-                                        },
-                                        icon: Icon(Icons.clear),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          borderSide: BorderSide(
-                                              color: ThemeColor.primary,
-                                              width: 2.0)),
-                                      focusedBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          borderSide: BorderSide(
-                                              color: ThemeColor.primary,
-                                              width: 2.0)),
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          borderSide: BorderSide(
-                                              color: ThemeColor.primary,
-                                              width: 2.0)),
-                                      contentPadding: EdgeInsets.all(16),
-                                      isCollapsed: true,
-                                      errorBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          borderSide: BorderSide(
-                                              color:
-                                                  Get.theme.colorScheme.error,
-                                              width: 2.0))),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          width: 240,
-                          height: 50,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: ThemeColor.primary,
-                              textStyle: const TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                            onPressed: () {
-                              // Get.toNamed(RouteHandler.OTP);
-                              // Get.find<AccountViewModel>()
-                              //     .checkUser(phoneNumber.text);
-                            },
-                            child: Text('Đăng nhập',
-                                style: Get.textTheme.bodyLarge
-                                    ?.copyWith(color: Colors.white)),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 60,
-                        ),
-                      ],
+                TextButton(
+                  onPressed: toggleLanguage,
+                  child: Text(
+                    currentLanguage == Language.Vietnamese
+                        ? "English"
+                        : "Tiếng Việt",
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
                     ),
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              "Login",
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: TextFormField(
+                controller: countrycode,
+                decoration: const InputDecoration(
+                  labelText: "Country Code",
+                  hintText: "+84",
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Please enter country code";
+                  }
+                  return null;
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: TextFormField(
+                controller: phoneNumber,
+                decoration: const InputDecoration(
+                  labelText: "Phone Number",
+                  hintText: "123456789",
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Please enter phone number";
+                  }
+                  if (!isValidPhoneNumber(value)) {
+                    return "Invalid phone number";
+                  }
+                  return null;
+                },
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                if (phoneKey.currentState!.validate()) {
+                  Get.toNamed(RouteHandler.OTP);
+                }
+              },
+              child: const Text("Login"),
             ),
           ],
         ),

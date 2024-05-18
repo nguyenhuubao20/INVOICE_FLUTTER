@@ -130,6 +130,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   void setInvoiceList(String status) {
+    if(status == 'All') {
+      displayedInvoices = invoiceList;
+      return;
+    }
     displayedInvoices =
         invoiceList.where((invoice) => invoice.status == status).toList();
   }

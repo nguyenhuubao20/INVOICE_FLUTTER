@@ -7,4 +7,5 @@ class RouteHandler {
   static const String NAV = "/nav";
   static const String WELCOME = "/";
   static const String NOT_FOUND = "/404";
+  static const String INTRO = "/intro";
 }

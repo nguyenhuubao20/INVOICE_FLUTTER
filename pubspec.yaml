@@ -58,6 +58,7 @@ dependencies:
   url_strategy: ^0.2.0
   dotted_dashed_line: ^0.0.3
   url_launcher: ^6.2.4
+  smooth_page_indicator: ^1.1.0  
 
 dev_dependencies:
   flutter_test:

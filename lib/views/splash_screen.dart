@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:invoice/utils/route_constrant.dart';
 
+import '../utils/share_pref.dart';
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
 
@@ -11,11 +13,16 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   @override
-  void initState() {
+  void initState() async {
     super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
+    final token = await getToken();
+    if (token != null) {
       Get.offAllNamed(RouteHandler.LOGIN);
-    });
+    } else {
+      Future.delayed(const Duration(seconds: 2), () {
+        Get.offAllNamed(RouteHandler.INTRO);
+      });
+    }
   }
 
   @override

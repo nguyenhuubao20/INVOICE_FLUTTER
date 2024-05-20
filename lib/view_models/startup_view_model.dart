@@ -28,6 +28,6 @@ class StartUpViewModel extends BaseViewModel {
     // }
     // await Get.find<MenuViewModel>().getListStore();
     // await Get.find<MenuViewModel>().getMenuOfBrand();
-    await Get.offAllNamed(RouteHandler.HOME);
+    await Get.offAllNamed(RouteHandler.LOGIN);
   }
 }

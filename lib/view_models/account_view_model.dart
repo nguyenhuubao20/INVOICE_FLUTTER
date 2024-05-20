@@ -3,6 +3,7 @@ import 'package:invoice/models/account.dart';
 import 'package:invoice/utils/request.dart';
 import 'package:invoice/utils/share_pref.dart';
 import 'package:invoice/view_models/base_view_model.dart';
+import 'package:invoice/view_models/startup_view_model.dart';
 
 import '../api/account.dart';
 import '../utils/route_constrant.dart';
@@ -10,6 +11,10 @@ import '../widgets/other_dialogs/dialog.dart';
 
 class AccountViewModel extends BaseViewModel {
   AccountAPI accountAPI = AccountAPI();
+  String? userId;
+  Account? account;
+
+
   AccountViewModel() {
     getToken().then((value) => requestObj.setToken = value);
   }
@@ -36,6 +41,19 @@ class AccountViewModel extends BaseViewModel {
       print('Đã xảy ra lỗi: $e');
       Get.snackbar('Lỗi', 'Đã xảy ra lỗi khi đăng nhập');
     } finally {
+      hideDialog();
+    }
+  }
+
+  //sign out 
+   Future<void> signOut() async {
+    var option = await showConfirmDialog();
+    if (option == true) {
+      showLoadingDialog();
+      userId = null;
+      account = null;
+      await removeALL();
+      await Get.find<StartUpViewModel>().handleStartUpLogic();
       hideDialog();
     }
   }

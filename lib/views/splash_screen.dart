@@ -17,7 +17,7 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     final token = await getToken();
     if (token != null) {
-      Get.offAllNamed(RouteHandler.LOGIN);
+      Get.offAllNamed(RouteHandler.HOME);
     } else {
       Future.delayed(const Duration(seconds: 2), () {
         Get.offAllNamed(RouteHandler.INTRO);

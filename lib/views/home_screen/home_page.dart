@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:invoice/models/invoice.dart';
+import 'package:invoice/view_models/account_view_model.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -130,7 +132,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void setInvoiceList(String status) {
-    if(status == 'All') {
+    if (status == 'All') {
       displayedInvoices = invoiceList;
       return;
     }
@@ -169,6 +171,16 @@ class _HomePageState extends State<HomePage> {
                 )
               ],
             ),
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.logout),
+                  onPressed: () {
+                    Get.find<AccountViewModel>().signOut();
+                  },
+                )
+              ],
+            )
           ],
         ),
         body: CustomScrollView(

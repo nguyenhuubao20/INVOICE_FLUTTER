@@ -1,11 +1,11 @@
 class Account {
   String accessToken;
   String id;
-  String username;
-  String name;
-  int role;
-  int status;
-  String brandName;
+  String? username;
+  String? name;
+  int? role;
+  int? status;
+  String? brandName;
 
   Account({
     required this.accessToken,

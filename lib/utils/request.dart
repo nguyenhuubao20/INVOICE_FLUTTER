@@ -23,6 +23,18 @@ Map<String, dynamic> convertToQueryParams(
   );
 }
 
+// void processToken(String token) {
+//   Map<String, dynamic> decodedToken = decodedToken(token);
+//   if (decodedToken != null) {
+//     // In thông tin từ token
+//     print('User ID: ${decodedToken['userId']}');
+//     print('Email: ${decodedToken['email']}');
+//     // Thực hiện các thao tác khác với thông tin
+//   } else {
+//     print('Token không hợp lệ!');
+//   }
+// }
+
 class AppException implements Exception {
   final _message;
   final _prefix;
@@ -91,7 +103,7 @@ class CustomInterceptors extends Interceptor {
 
 class MyRequest {
   static BaseOptions options = BaseOptions(
-      baseUrl: 'https://localhost:7004/api/v1/',
+      baseUrl: 'https://reso-invoice.onrender.com/api/v1/',
       headers: {
         Headers.contentTypeHeader: "application/json",
         Headers.acceptHeader: "text/plain",

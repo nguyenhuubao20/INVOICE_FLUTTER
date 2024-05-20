@@ -45,7 +45,7 @@ Future<void> setUserId(String userId) async {
   prefs.setString("userId", jsonEncode(user));
 }
 
-Future<String?> getUserId() async {
+Future<String?> getUserId(String id) async {
   final SharedPreferences pref = await SharedPreferences.getInstance();
   String? userData = pref.getString("userId");
   if (userData != null) {

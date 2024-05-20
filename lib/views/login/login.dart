@@ -1,8 +1,6 @@
-// import 'package:deer_coffee/view_models/account_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../utils/route_constrant.dart';
+import 'package:invoice/view_models/account_view_model.dart';
 
 enum Language {
   Vietnamese,
@@ -19,8 +17,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  TextEditingController countrycode = TextEditingController();
-  TextEditingController phoneNumber = TextEditingController();
+  TextEditingController _username = TextEditingController();
+  TextEditingController _password = TextEditingController();
 
   void toggleLanguage() {
     if (currentLanguage == Language.Vietnamese) {
@@ -33,7 +31,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void initState() {
-    countrycode.text = "+84";
     super.initState();
   }
 
@@ -48,10 +45,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    GlobalKey<FormState> phoneKey = GlobalKey<FormState>();
+    // GlobalKey<FormState> phoneKey = GlobalKey<FormState>();
     return Form(
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      key: phoneKey,
+      // key: phoneKey,
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         body: Column(
@@ -86,10 +83,9 @@ class _LoginScreenState extends State<LoginScreen> {
             Padding(
               padding: const EdgeInsets.all(20),
               child: TextFormField(
-                controller: countrycode,
+                controller: _username,
                 decoration: const InputDecoration(
-                  labelText: "Country Code",
-                  hintText: "+84",
+                  labelText: "Username",
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -102,17 +98,13 @@ class _LoginScreenState extends State<LoginScreen> {
             Padding(
               padding: const EdgeInsets.all(20),
               child: TextFormField(
-                controller: phoneNumber,
+                controller: _password,
                 decoration: const InputDecoration(
-                  labelText: "Phone Number",
-                  hintText: "123456789",
+                  labelText: "Password",
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Please enter phone number";
-                  }
-                  if (!isValidPhoneNumber(value)) {
-                    return "Invalid phone number";
                   }
                   return null;
                 },
@@ -121,9 +113,10 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                if (phoneKey.currentState!.validate()) {
-                  Get.toNamed(RouteHandler.OTP);
-                }
+                Get.find<AccountViewModel>().onLogin(
+                  _username.text,
+                  _password.text,
+                );
               },
               child: const Text("Login"),
             ),

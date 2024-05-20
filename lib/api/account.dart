@@ -13,13 +13,18 @@ class AccountAPI {
   }
 
   Future<Account?> signIn(String userName, String password) async {
-    final res = await request.post('auth/login', data: {
-      "username": userName,
-      "password": password,
-    });
-    var json = res.data;
-    Account user = Account.fromJson(json);
-    return user;
+    try {
+      final res = await request.post('auth/login', data: {
+        "username": userName,
+        "password": password,
+      });
+      var json = res.data;
+      Account user = Account.fromJson(json);
+      return user;
+    } catch (e) {
+      print('Error during sign in: $e');
+      return null;
+    }
   }
 
   // Future<num?> checkUser(String phone) async {

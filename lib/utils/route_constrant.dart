@@ -5,6 +5,7 @@ class RouteHandler {
   static const String RESET = "/reset-password";
   static const String HOME = "/home";
   static const String NAV = "/nav";
+  static const String INVOICE_DETAIL = "/invoice-detail";
   static const String WELCOME = "/";
   static const String NOT_FOUND = "/404";
   static const String INTRO = "/intro";

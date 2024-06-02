@@ -17,8 +17,8 @@ class AppTheme {
     brightness: Brightness.light,
     fontFamily: 'Arial',
     textTheme: const TextTheme(
-      headline1: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-      bodyText1: TextStyle(fontSize: 16),
+      headlineLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+      bodyLarge: TextStyle(fontSize: 16),
     ),
     buttonTheme: const ButtonThemeData(
       buttonColor: Color(0xff8FBEFF), // Màu của các nút bấm
@@ -40,9 +40,9 @@ class AppTheme {
     brightness: Brightness.dark,
     fontFamily: 'Inter',
     textTheme: const TextTheme(
-      headline1: TextStyle(
+      headlineLarge: TextStyle(
           fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-      bodyText1: TextStyle(fontSize: 16, color: Colors.white),
+      bodyLarge: TextStyle(fontSize: 16, color: Colors.white),
     ),
     buttonTheme: const ButtonThemeData(
       buttonColor: Color(0xff8FBEFF), // Màu của các nút bấm

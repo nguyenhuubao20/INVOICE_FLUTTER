@@ -23,18 +23,6 @@ Map<String, dynamic> convertToQueryParams(
   );
 }
 
-// void processToken(String token) {
-//   Map<String, dynamic> decodedToken = decodedToken(token);
-//   if (decodedToken != null) {
-//     // In thông tin từ token
-//     print('User ID: ${decodedToken['userId']}');
-//     print('Email: ${decodedToken['email']}');
-//     // Thực hiện các thao tác khác với thông tin
-//   } else {
-//     print('Token không hợp lệ!');
-//   }
-// }
-
 class AppException implements Exception {
   final _message;
   final _prefix;
@@ -108,9 +96,9 @@ class MyRequest {
         Headers.contentTypeHeader: "application/json",
         Headers.acceptHeader: "text/plain",
       },
-      connectTimeout: const Duration(seconds: 15),
-      sendTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15));
+      connectTimeout: const Duration(seconds: 20),
+      sendTimeout: const Duration(seconds: 20),
+      receiveTimeout: const Duration(seconds: 20));
 
   late Dio _inner;
   MyRequest() {

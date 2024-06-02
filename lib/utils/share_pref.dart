@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// import '../models/user.dart';
-
 Future<bool> setToken(String value) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   String expireDate = DateFormat("yyyy-MM-dd hh:mm:ss")
@@ -45,7 +43,7 @@ Future<void> setUserId(String userId) async {
   prefs.setString("userId", jsonEncode(user));
 }
 
-Future<String?> getUserId(String id) async {
+Future<String?> getUserId() async {
   final SharedPreferences pref = await SharedPreferences.getInstance();
   String? userData = pref.getString("userId");
   if (userData != null) {
@@ -54,7 +52,37 @@ Future<String?> getUserId(String id) async {
   return null;
 }
 
+Future<void> setRole(int role) async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setInt("role", role);
+}
+
+Future<int?> getRole() async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getInt("role");
+}
+
+Future<void> setUsername(String username) async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setString("username", username);
+}
+
+Future<String?> getUsername() async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString("username");
+}
+
 Future<void> removeALL() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.clear();
+}
+
+Future<String?> getBrandId() async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString("brandId");
+}
+
+Future<String?> setBrandId(String? brandId) async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString("brandId");
 }

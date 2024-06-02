@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:invoice/utils/route_constrant.dart';
 
-import '../utils/share_pref.dart';
+import '../api/account_api.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -13,13 +13,18 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   @override
-  void initState() async {
+  void initState() {
     super.initState();
-    final token = await getToken();
-    if (token != null) {
+    _checkUserIsLogged();
+  }
+
+  Future<void> _checkUserIsLogged() async {
+    AccountAPI accountAPI = AccountAPI();
+    bool isLoggedIn = await accountAPI.checkUserIsLogged();
+    if (isLoggedIn) {
       Get.offAllNamed(RouteHandler.HOME);
     } else {
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(seconds: 1), () {
         Get.offAllNamed(RouteHandler.INTRO);
       });
     }

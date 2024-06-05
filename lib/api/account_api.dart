@@ -7,27 +7,34 @@ class AccountAPI {
   static int page = 1;
   static int size = 10;
 
-  Future<bool> checkUserIsLogged() async {
+  Future<Account?> checkUserIsLogged() async {
     String token = await getToken() ?? '';
     String userId = await getUserId() ?? '';
+    if (token.isEmpty || userId.isEmpty) {
+      return null;
+    }
     final isExpireToken = await expireToken();
-    if (isExpireToken) return false;
+    if (isExpireToken) {
+      return null;
+    }
     try {
       var params = {
         'id': userId,
         'token': token,
       };
-
-      final res = await request.get('accounts/jwt', queryParameters: params);
+      final res =
+          await request.get('accounts/${userId}/jwt', queryParameters: params);
       if (res.statusCode == 200) {
-        return true;
+        var json = res.data;
+        Account account = Account.fromJson(json);
+        return account;
       } else {
         print('Failed to sign in. Status code: ${res.statusCode}');
-        return false;
+        return null;
       }
     } catch (e) {
       print('Error during sign in: $e');
-      return false;
+      return null;
     }
   }
 
@@ -39,7 +46,6 @@ class AccountAPI {
       });
       var json = res.data;
       Account account = Account.fromJson(json);
-      setUserId(account.id);
       return account;
     } catch (e) {
       print('Error during sign in: $e');
@@ -47,7 +53,19 @@ class AccountAPI {
     }
   }
 
-  Future<User?> getBrandIdByUserId(
+  Future<Account?> getAccountInfo(String? userId) async {
+    try {
+      final res = await request.get('accounts/$userId');
+      var json = res.data;
+      Account account = Account.fromJson(json);
+      return account;
+    } catch (e) {
+      print('Error during get account info: $e');
+      return null;
+    }
+  }
+
+  Future<Account?> getBrandIdByUserId(
       String? userId, String? username, int? role) async {
     try {
       var params = {
@@ -59,9 +77,8 @@ class AccountAPI {
       final res =
           await request.get('brands/$userId/users', queryParameters: params);
       var json = res.data;
-      User user = User.fromJson(json);
-      setStoreId(user.storeId);
-      return user;
+      Account account = Account.fromJson(json);
+      return account;
     } catch (e) {
       print('Error during get brand id: $e');
       return null;

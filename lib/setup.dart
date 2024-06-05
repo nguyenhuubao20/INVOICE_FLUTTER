@@ -6,6 +6,6 @@ import 'view_models/startup_view_model.dart';
 
 void createRouteBindings() {
   Get.put(StartUpViewModel());
-  Get.put(InvoiceViewModel());
   Get.put(AccountViewModel());
+  Get.put(InvoiceViewModel());
 }

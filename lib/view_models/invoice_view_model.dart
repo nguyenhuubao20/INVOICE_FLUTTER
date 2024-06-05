@@ -1,6 +1,7 @@
+import 'package:get/get.dart';
 import 'package:invoice/enums/view_status.dart';
 import 'package:invoice/models/invoice.dart';
-import 'package:invoice/utils/share_pref.dart';
+import 'package:invoice/view_models/account_view_model.dart';
 import 'package:invoice/view_models/base_view_model.dart';
 
 import '../api/invoice_api.dart';
@@ -10,13 +11,24 @@ class InvoiceViewModel extends BaseViewModel {
   Invoice? get invoice => _invoice;
   List<Invoice>? invoiceList = [];
   List<InvoiceDetail>? invoiceDetail = [];
+  final AccountViewModel _accountViewModel = Get.find<AccountViewModel>();
 
   Future<void> loadInvoice() async {
     try {
       setState(ViewStatus.Loading);
       await Future.delayed(const Duration(seconds: 1));
-      final brandId = await getBrandId();
-      invoiceList = await InvoiceAPI().getInvoices();
+      switch (_accountViewModel.account!.role) {
+        case 1:
+          invoiceList = await InvoiceAPI().getInvoicesBySystemAdmin();
+          break;
+        case 2:
+          invoiceList = await InvoiceAPI().getInvoicesByOrganizationAdmin();
+          break;
+        case 0:
+          invoiceList = await InvoiceAPI().getInvoicesByBrandAdmin();
+          break;
+      }
+
       if (invoiceList != null) {
         setState(ViewStatus.Completed);
       } else {
@@ -31,7 +43,7 @@ class InvoiceViewModel extends BaseViewModel {
     try {
       setState(ViewStatus.Loading);
       await Future.delayed(const Duration(seconds: 1));
-      invoiceList = await InvoiceAPI().getInvoices();
+      invoiceList = await InvoiceAPI().getInvoicesBySystemAdmin();
       _invoice = invoiceList!.firstWhere((element) => element.id == invoiceId);
       if (_invoice != null) {
         setState(ViewStatus.Completed);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../utils/theme.dart';
 import 'home_screen/home_page.dart';
+import 'invoice/create_invoice.dart';
 
 class RootScreen extends StatefulWidget {
   final int idx;
@@ -16,6 +17,7 @@ class _RootScreenState extends State<RootScreen> {
   String? userId;
   List<Widget> portraitViews = [
     HomePage(),
+    CreateInvoice(),
     HomePage(),
     HomePage(),
   ];
@@ -23,6 +25,7 @@ class _RootScreenState extends State<RootScreen> {
   List<BottomNavigationBarItem> items = const [
     BottomNavigationBarItem(icon: Icon(Icons.receipt), label: 'Invoice'),
     BottomNavigationBarItem(icon: Icon(Icons.create_sharp), label: 'Create'),
+    BottomNavigationBarItem(icon: Icon(Icons.dashboard_customize), label: 'Dashboard'),
     BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
   ];
   @override

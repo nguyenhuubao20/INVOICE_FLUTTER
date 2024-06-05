@@ -3,12 +3,12 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<bool> setToken(String value) async {
+Future<bool> setToken(String? value) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   String expireDate = DateFormat("yyyy-MM-dd hh:mm:ss")
       .format(DateTime.now().add(Duration(days: 30)));
   prefs.setString('expireDate', expireDate.toString());
-  return prefs.setString('token', value);
+  return prefs.setString('token', value!);
 }
 
 Future<bool> expireToken() async {
@@ -37,7 +37,7 @@ Future<void> setStoreId(String? storeId) async {
   prefs.setString("storeId", storeId.toString());
 }
 
-Future<void> setUserId(String userId) async {
+Future<void> setUserId(String? userId) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final user = userId;
   prefs.setString("userId", jsonEncode(user));
@@ -82,7 +82,17 @@ Future<String?> getBrandId() async {
   return prefs.getString("brandId");
 }
 
-Future<String?> setBrandId(String? brandId) async {
+Future<void> setBrandId(String? brandId) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  return prefs.getString("brandId");
+  prefs.setString("brandId", brandId ?? '');
+}
+
+Future<void> setOrganizationId(String? organizationId) async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setString("organizationId", organizationId ?? '');
+}
+
+Future<String?> getOrganizationId() async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString("organizationId");
 }

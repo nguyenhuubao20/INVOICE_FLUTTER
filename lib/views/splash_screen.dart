@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:invoice/models/account.dart';
 import 'package:invoice/utils/route_constrant.dart';
-
-import '../api/account_api.dart';
+import 'package:invoice/view_models/account_view_model.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -12,6 +12,8 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  final AccountViewModel acc = Get.find<AccountViewModel>();
+
   @override
   void initState() {
     super.initState();
@@ -19,14 +21,11 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkUserIsLogged() async {
-    AccountAPI accountAPI = AccountAPI();
-    bool isLoggedIn = await accountAPI.checkUserIsLogged();
-    if (isLoggedIn) {
-      Get.offAllNamed(RouteHandler.HOME);
+    Account? account = await acc.checkUserIsLogged();
+    if (account != null) {
+      Get.toNamed(RouteHandler.HOME);
     } else {
-      Future.delayed(const Duration(seconds: 1), () {
-        Get.offAllNamed(RouteHandler.INTRO);
-      });
+      Get.offAllNamed(RouteHandler.INTRO);
     }
   }
 

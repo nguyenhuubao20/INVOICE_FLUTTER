@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:invoice/models/account.dart';
 import 'package:invoice/models/invoice.dart';
 import 'package:invoice/utils/route_constrant.dart';
 import 'package:invoice/view_models/invoice_view_model.dart';
@@ -20,13 +21,14 @@ class _HomePageState extends State<HomePage> {
   ScrollController _invoicescrollController = ScrollController();
   int selectedMenu = 0;
   List<Invoice>? displayedInvoices = [];
-  late InvoiceViewModel invoiceViewModel;
+  Account? account;
+  final AccountViewModel _accountViewModel = Get.find<AccountViewModel>();
+  final InvoiceViewModel _invoiceViewModel = Get.find<InvoiceViewModel>();
 
   @override
   void initState() {
     super.initState();
-    invoiceViewModel = Get.find<InvoiceViewModel>();
-    invoiceViewModel.loadInvoice();
+    _invoiceViewModel.loadInvoice();
   }
 
   void setInvoiceList(String status) {}
@@ -36,7 +38,8 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Invoice'),
+        title: Text(
+            'Welcome, ${_accountViewModel.account?.name ?? 'ADMIN'}'),
         actions: [
           Container(
             margin: EdgeInsets.all(8.0),
@@ -76,7 +79,7 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: ScopedModel<InvoiceViewModel>(
-        model: invoiceViewModel,
+        model: _invoiceViewModel,
         child: ScopedModelDescendant<InvoiceViewModel>(
           builder: (context, child, model) {
             if (model.status == ViewStatus.Loading) {

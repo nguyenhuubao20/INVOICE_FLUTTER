@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:invoice/enums/invoice_status.dart';
 import 'package:invoice/models/account.dart';
 import 'package:invoice/models/invoice.dart';
 import 'package:invoice/utils/route_constrant.dart';
@@ -38,8 +39,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(
-            'Welcome, ${_accountViewModel.account?.name ?? 'ADMIN'}'),
+        title: Text('Welcome, ${_accountViewModel.account?.name ?? 'ADMIN'}'),
         actions: [
           Container(
             margin: EdgeInsets.all(8.0),
@@ -145,7 +145,21 @@ class _HomePageState extends State<HomePage> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.end,
                                       children: [
-                                        Text('Status: ${invoice.status}'),
+                                        Container(
+                                          padding: EdgeInsets.all(8.0),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                getStatusColor(invoice.status),
+                                            border: Border.all(
+                                              color: getBorderColor(
+                                                  invoice.status),
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                          child: Text(
+                                              (invoiceStatusFromString(invoice.status ?? 5)).toString()),
+                                        ),
                                         Text(
                                             'Payment Method: ${invoice.paymentMethod}'),
                                       ],
@@ -174,36 +188,32 @@ class _HomePageState extends State<HomePage> {
 }
 
 // Helper functions to get status and border colors
-Color? getStatusColor(int status) {
+Color getStatusColor(int? status) {
   switch (status) {
+    case 0:
+      return Colors.orange[100]!;
     case 1:
-      return Colors.orange[100];
+      return Colors.red[100]!;
     case 2:
-      return Colors.red[100];
+      return Colors.green[100]!;
     case 3:
-      return Colors.green[100];
-    case 4:
-      return Colors.grey[200];
-    case 5:
-      return const Color.fromARGB(255, 180, 178, 178);
+      return Colors.grey[200]!;
     default:
-      return Colors.transparent;
+      return const Color.fromARGB(255, 180, 178, 178);
   }
 }
 
-Color? getBorderColor(int status) {
+Color getBorderColor(int? status) {
   switch (status) {
+    case 0:
+      return Colors.orange!;
     case 1:
-      return Colors.orange;
+      return Colors.red!;
     case 2:
-      return Colors.red;
+      return Colors.green!;
     case 3:
-      return Colors.green;
-    case 4:
-      return Colors.grey[200];
-    case 5:
-      return Colors.grey;
+      return Colors.grey[200]!;
     default:
-      return Colors.transparent;
+      return Colors.grey;
   }
 }

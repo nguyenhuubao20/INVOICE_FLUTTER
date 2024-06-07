@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:invoice/utils/theme.dart';
 import 'package:invoice/view_models/account_view_model.dart';
 
 enum Language {
@@ -57,16 +58,6 @@ class _LoginScreenState extends State<LoginScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.logout),
-                      onPressed: () {
-                        Get.find<AccountViewModel>().signOut();
-                      },
-                    )
-                  ],
-                ),
                 TextButton(
                   onPressed: toggleLanguage,
                   child: Text(
@@ -82,39 +73,94 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
             const SizedBox(height: 20),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            //   children: [
+            //     Image.asset(
+            //       'assets/images/logo.png',
+            //       width: 100,
+            //       height: 100,
+            //     ),
+            //   ],
+            // ),
             const Text(
-              "Login",
+              "Welcome to RESO Invoice",
               style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color.fromARGB(255, 243, 159, 159)),
             ),
             const SizedBox(height: 20),
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(30, 0, 30, 20),
               child: TextFormField(
                 controller: _username,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.red),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.red),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  suffixIcon: Icon(Icons.person),
                   labelText: "Username",
+                  labelStyle: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return "Please enter country code";
+                    return "Please enter username";
                   }
                   return null;
                 },
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
               child: TextFormField(
+                obscureText: true,
                 controller: _password,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.red),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.red),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  suffixIcon: Icon(Icons.lock),
                   labelText: "Password",
+                  labelStyle: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return "Please enter phone number";
+                    return "Please enter password";
                   }
                   return null;
                 },
@@ -128,8 +174,50 @@ class _LoginScreenState extends State<LoginScreen> {
                   _password.text,
                 );
               },
-              child: const Text("Login"),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: ThemeColor.primary, // Text color
+                shadowColor: Colors.black, // Shadow color
+                elevation: 5, // Elevation
+                padding: EdgeInsets.symmetric(
+                    horizontal: 180, vertical: 10), // Padding
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15), // Rounded corners
+                ),
+              ),
+              child: const Text(
+                "Login",
+                style: TextStyle(
+                  fontSize: 18, // Text size
+                  fontWeight: FontWeight.bold, // Text weight
+                ),
+              ),
             ),
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  "Don't have an account?",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold, // Text weight
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    // Add your contact action here, like opening a contact form or sending an email
+                  },
+                  child: const Text(
+                    " Contact us",
+                    style: TextStyle(
+                      color:
+                          Colors.blue, // Text color to make it look like a link
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            )
           ],
         ),
       ),

@@ -24,7 +24,7 @@ class AccountViewModel extends BaseViewModel {
     try {
       account = await accountAPI.signIn(username, password);
       if (account == null) {
-        Get.snackbar('Lỗi đăng nhập', 'Không tìm thấy tài khoản');
+        // showAlertDialog(title: 'Lỗi đăng nhập', content: 'Không tìm thấy tài khoản');
         return account;
       }
       if (account?.status == 0) {

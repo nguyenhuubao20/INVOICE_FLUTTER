@@ -1,9 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class UserAppBar extends StatefulWidget {
-  const UserAppBar({super.key});
+  const UserAppBar({super.key, required String title});
 
   @override
   State<UserAppBar> createState() => _UserAppBarState();

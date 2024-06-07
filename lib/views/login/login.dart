@@ -57,6 +57,16 @@ class _LoginScreenState extends State<LoginScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.logout),
+                      onPressed: () {
+                        Get.find<AccountViewModel>().signOut();
+                      },
+                    )
+                  ],
+                ),
                 TextButton(
                   onPressed: toggleLanguage,
                   child: Text(

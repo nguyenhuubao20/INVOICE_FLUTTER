@@ -13,6 +13,7 @@ import 'package:invoice/views/splash_screen.dart';
 import 'package:url_strategy/url_strategy.dart';
 
 import 'utils/theme.dart';
+import 'views/invoice/add_template.dart';
 import 'views/login/login.dart';
 import 'widgets/carousel_slider.dart';
 
@@ -57,13 +58,24 @@ class MyApp extends StatelessWidget {
             page: () => const LoginScreen(),
             transition: Transition.cupertino),
         GetPage(
-            name: RouteHandler.INTRO,
-            page: () => const SliderIntroduction(),
+            name: RouteHandler.ADD_TEMPLATES,
+            page: () => const AddInvoiceTemplate(),
             transition: Transition.cupertino),
         GetPage(
             name: RouteHandler.INVOICE_DETAIL,
             page: () => InvoiceDetail(invoiceId: Get.parameters['id'] ?? '0'),
             transition: Transition.cupertino),
+        GetPage(
+            name: RouteHandler.INTRO,
+            page: () => const SliderIntroduction(),
+            transition: Transition.cupertino),
+        GetPage(
+          name: RouteHandler.CREATE_INVOICE,
+          page: () => RootScreen(
+            idx: int.parse(Get.parameters['idx'] ?? '0'),
+          ),
+          transition: Transition.cupertino,
+        ),
         GetPage(
             name: RouteHandler.HOME,
             page: () => RootScreen(

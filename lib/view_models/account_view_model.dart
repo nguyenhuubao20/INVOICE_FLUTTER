@@ -22,24 +22,23 @@ class AccountViewModel extends BaseViewModel {
   Future<Account?> onLogin(String username, String password) async {
     showLoadingDialog();
     try {
-      Account? _account = await accountAPI.signIn(username, password);
-      if (_account == null) {
+      account = await accountAPI.signIn(username, password);
+      if (account == null) {
         Get.snackbar('Lỗi đăng nhập', 'Không tìm thấy tài khoản');
         return account;
       }
-      if (_account.status == 0) {
-        requestObj.setToken = _account.accessToken;
+      if (account?.status == 0) {
+        requestObj.setToken = account?.accessToken;
         //BrandAdmin = 0,
         //SystemAdmin = 1,
         //Organization = 2,
-        await setBrandId(_account.brandId ?? '');
-        await setOrganizationId(_account.organizationId ?? '');
-        await setUserId(_account.id);
-        await setToken(_account.accessToken);
+        await setBrandId(account?.brandId ?? '');
+        await setOrganizationId(account?.organizationId ?? '');
+        await setUserId(account?.id);
+        await setToken(account?.accessToken);
         getBrandId();
         hideDialog();
         Get.snackbar('Thông báo', 'Đăng nhập thành công');
-        account = _account;
         Get.offAllNamed(RouteHandler.HOME);
       } else {
         Get.snackbar('Lỗi đăng nhập', 'Đã xảy ra lỗi');
@@ -68,9 +67,8 @@ class AccountViewModel extends BaseViewModel {
 
   Future<Account?> checkUserIsLogged() async {
     try {
-      Account? _account = await accountAPI.checkUserIsLogged();
-      if (_account != null) {
-        account = _account;
+      account = await accountAPI.checkUserIsLogged();
+      if (account != null) {
         notifyListeners();
         return account;
       } else {

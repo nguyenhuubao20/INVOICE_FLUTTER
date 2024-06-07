@@ -77,15 +77,15 @@ class _SliderIntroductionState extends State<SliderIntroduction> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(15),
-              child: Image.network(
-                item['image']!,
-                fit: BoxFit.contain,
-                height: 250,
-                width: double.infinity,
-              ),
-            ),
+            // ClipRRect(
+            //   borderRadius: BorderRadius.circular(15),
+            //   child: Image.network(
+            //     item['image']!,
+            //     fit: BoxFit.contain,
+            //     height: 250,
+            //     width: double.infinity,
+            //   ),
+            // ),
             const SizedBox(height: 20),
             Text(
               item['title']!,

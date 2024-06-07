@@ -1,43 +1,44 @@
 class InvoiceTemplate {
   String? id;
-  String? name;
-  String? code;
-  String? taxCode;
-  String? descriptions;
+  String? organizationId;
+  String? organizationName;
+  String? templateName;
+  int? templateType;
+  String? invSeries;
+  int? invoiceType;
   int? status;
-  String? secretKey;
 
-  InvoiceTemplate({
-    this.id,
-    this.name,
-    this.code,
-    this.taxCode,
-    this.descriptions,
-    this.status,
-    this.secretKey,
-  });
+  InvoiceTemplate(
+      {this.id,
+      this.organizationId,
+      this.organizationName,
+      this.templateName,
+      this.templateType,
+      this.invSeries,
+      this.invoiceType,
+      this.status});
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'code': code,
-      'taxcode': taxCode,
-      'descriptions': descriptions,
-      'status': status,
-      'secretKey': secretKey,
-    };
+  InvoiceTemplate.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    organizationId = json['organizationId'];
+    organizationName = json['organizationName'];
+    templateName = json['templateName'];
+    templateType = json['templateType'];
+    invSeries = json['invSeries'];
+    invoiceType = json['invoiceType'];
+    status = json['status'];
   }
 
-  factory InvoiceTemplate.fromJson(Map<String, dynamic> json) {
+  factory InvoiceTemplate.fromJsonFactory(Map<String, dynamic> json) {
     return InvoiceTemplate(
       id: json['id'],
-      name: json['name'],
-      code: json['code'],
-      taxCode: json['taxcode'],
-      descriptions: json['descriptions'],
+      organizationId: json['organizationId'],
+      organizationName: json['organizationName'],
+      templateName: json['templateName'],
+      templateType: json['templateType'],
+      invSeries: json['invSeries'],
+      invoiceType: json['invoiceType'],
       status: json['status'],
-      secretKey: json['secretKey'],
     );
   }
 }

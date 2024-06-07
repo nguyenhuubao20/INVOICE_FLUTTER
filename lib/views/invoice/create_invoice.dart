@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:invoice/utils/route_constrant.dart';
 
 class CreateInvoice extends StatefulWidget {
   const CreateInvoice({super.key});
@@ -29,7 +31,7 @@ class _CreateInvoiceState extends State<CreateInvoice> {
                   children: [
                     InkWell(
                       onTap: () {
-                        Navigator.pop(context);
+                        Get.offAllNamed(RouteHandler.ADD_TEMPLATES);
                       },
                       child: Container(
                         padding: const EdgeInsets.all(8.0),
@@ -52,7 +54,6 @@ class _CreateInvoiceState extends State<CreateInvoice> {
                   children: [
                     InkWell(
                       onTap: () {
-                        Navigator.pop(context);
                       },
                       child: Container(
                         padding: const EdgeInsets.all(8.0),
@@ -75,7 +76,6 @@ class _CreateInvoiceState extends State<CreateInvoice> {
                   children: [
                     InkWell(
                       onTap: () {
-                        Navigator.pop(context);
                       },
                       child: Container(
                         padding: const EdgeInsets.all(8.0),

@@ -138,7 +138,11 @@ class MyRequest {
   }
 
   set setToken(token) {
-    options.headers["Authorization"] = "Bearer $token";
+    if (token != null) {
+      options.headers["Authorization"] = "Bearer $token";
+    } else {
+      options.headers.remove("Authorization");
+    }
   }
 }
 

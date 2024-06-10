@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:invoice/utils/route_constrant.dart';
 
 import '../utils/theme.dart';
+import 'chart/dashboard.dart';
 import 'home_screen/home_page.dart';
 import 'invoice/create_invoice.dart';
 
@@ -18,14 +21,15 @@ class _RootScreenState extends State<RootScreen> {
   List<Widget> portraitViews = [
     HomePage(),
     CreateInvoice(),
-    HomePage(),
+    Dashboard(),
     HomePage(),
   ];
 
   List<BottomNavigationBarItem> items = const [
     BottomNavigationBarItem(icon: Icon(Icons.receipt), label: 'Invoice'),
     BottomNavigationBarItem(icon: Icon(Icons.create_sharp), label: 'Create'),
-    BottomNavigationBarItem(icon: Icon(Icons.dashboard_customize), label: 'Dashboard'),
+    BottomNavigationBarItem(
+        icon: Icon(Icons.dashboard_customize), label: 'Dashboard'),
     BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
   ];
   @override
@@ -48,28 +52,20 @@ class _RootScreenState extends State<RootScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      // floatingActionButton: FloatingActionButton(
-      //     elevation: 2,
-      //     backgroundColor: ThemeColor.primary,
-      //     onPressed: () {
-      //       if (userId == null) {
-      //         showConfirmDialog(
-      //                 title: "Người dùng chưa đăng nhập",
-      //                 content:
-      //                     "Vui lòng đăng nhập để đặt đơn và nhận ưu đãi nhé",
-      //                 confirmText: "Đăng nhập")
-      //             .then((value) => {
-      //                   if (value) {Get.toNamed(RouteHandler.LOGIN)}
-      //                 });
-      //       } else {}
-      //     },
-      //     child: const Icon(
-      //       Icons.qr_code_scanner,
-      //       size: 28,
-      //       color: Colors.white,
-      //     )
-      //     ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+        elevation: 2,
+        backgroundColor: ThemeColor.primary,
+        onPressed: () {
+          Get.toNamed(RouteHandler.CREATE_INVOICE);
+        },
+        child: Icon(
+          Icons.add,
+          size: 28,
+          color: Colors.white,
+        ),
+        shape: CircleBorder(),
+      ),
       body: portraitViews[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         showUnselectedLabels: true,
@@ -78,7 +74,7 @@ class _RootScreenState extends State<RootScreen> {
         iconSize: 24,
         currentIndex: _selectedIndex,
         selectedItemColor: ThemeColor.primary,
-        unselectedItemColor: Colors.grey,
+        unselectedItemColor: Colors.grey[600],
         onTap: (int index) {
           setState(() {
             _selectedIndex = index;

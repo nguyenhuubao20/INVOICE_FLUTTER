@@ -7,6 +7,7 @@ import 'package:invoice/setup.dart';
 import 'package:invoice/utils/request.dart';
 import 'package:invoice/utils/route_constrant.dart';
 import 'package:invoice/views/home_screen/invoice_detail.dart';
+import 'package:invoice/views/invoice/create_invoice.dart';
 import 'package:invoice/views/not_found_screen.dart';
 import 'package:invoice/views/root_screen.dart';
 import 'package:invoice/views/splash_screen.dart';
@@ -70,10 +71,15 @@ class MyApp extends StatelessWidget {
             page: () => const SliderIntroduction(),
             transition: Transition.cupertino),
         GetPage(
-          name: RouteHandler.CREATE_INVOICE,
+          name: RouteHandler.DASHBOARD,
           page: () => RootScreen(
             idx: int.parse(Get.parameters['idx'] ?? '0'),
           ),
+          transition: Transition.cupertino,
+        ),
+        GetPage(
+          name: RouteHandler.CREATE_INVOICE,
+          page: () => const CreateInvoice(),
           transition: Transition.cupertino,
         ),
         GetPage(

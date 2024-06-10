@@ -116,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   labelText: "Username",
                   labelStyle: TextStyle(
                     color: Colors.black,
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -154,7 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   labelText: "Password",
                   labelStyle: TextStyle(
                     color: Colors.black,
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -180,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 shadowColor: Colors.black, // Shadow color
                 elevation: 5, // Elevation
                 padding: EdgeInsets.symmetric(
-                    horizontal: 180, vertical: 10), // Padding
+                    horizontal: 160, vertical: 10), // Padding
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15), // Rounded corners
                 ),
@@ -188,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: const Text(
                 "Login",
                 style: TextStyle(
-                  fontSize: 18, // Text size
+                  fontSize: 16, // Text size
                   fontWeight: FontWeight.bold, // Text weight
                 ),
               ),

@@ -5,12 +5,14 @@ import 'package:invoice/view_models/account_view_model.dart';
 import 'package:invoice/view_models/base_view_model.dart';
 
 import '../api/invoice_api.dart';
+import '../enums/invoice_status.dart';
 
 class InvoiceViewModel extends BaseViewModel {
   late Invoice _invoice;
   Invoice? get invoice => _invoice;
   List<Invoice>? invoiceList = [];
   List<InvoiceDetail>? invoiceDetail = [];
+  List<String> invoiceStatus = [];
   final AccountViewModel _accountViewModel = Get.find<AccountViewModel>();
 
   Future<void> loadInvoice() async {
@@ -30,6 +32,7 @@ class InvoiceViewModel extends BaseViewModel {
       }
 
       if (invoiceList != null) {
+        await getInvoiceStatus();
         setState(ViewStatus.Completed);
       } else {
         setState(ViewStatus.Error, 'Invoice list not found');
@@ -57,6 +60,23 @@ class InvoiceViewModel extends BaseViewModel {
 
   Invoice? getInvoiceDetailSync(String invoiceId) {
     return invoiceList!.firstWhere((element) => element.id == invoiceId);
+  }
+
+  List<Invoice> getInvoiceByStatus(int status) {
+    return invoiceList!.where((element) => element.status == status).toList();
+  }
+
+  Future<void> getInvoiceStatus() async {
+    if (invoiceList != null) {
+      final distinctStatuses = invoiceList!
+          .map((e) => invoiceStatusFromString(e.status))
+          .toSet()
+          .toList();
+
+      invoiceStatus = distinctStatuses;
+    } else {
+      invoiceStatus = [];
+    }
   }
 
   // Future<List<Invoice?>> getInvoiceListByStoreId(String? idStore) async {

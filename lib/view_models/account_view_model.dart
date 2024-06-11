@@ -40,6 +40,7 @@ class AccountViewModel extends BaseViewModel {
         hideDialog();
         Get.snackbar('Thông báo', 'Đăng nhập thành công');
         Get.offAllNamed(RouteHandler.HOME);
+        notifyListeners();
       } else {
         Get.snackbar('Lỗi đăng nhập', 'Đã xảy ra lỗi');
       }
@@ -85,6 +86,7 @@ class AccountViewModel extends BaseViewModel {
       setState(ViewStatus.Loading);
       account = await accountAPI.getAccountInfo(id);
       setState(ViewStatus.Completed);
+      notifyListeners();
     } catch (e) {
       setState(ViewStatus.Error);
       showAlertDialog(title: "Lỗi", content: e.toString());

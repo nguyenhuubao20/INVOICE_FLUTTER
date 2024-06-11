@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:invoice/enums/view_status.dart';
-import 'package:invoice/models/invoice.dart';
+import 'package:invoice/models/invoice/invoice.dart';
 import 'package:invoice/view_models/account_view_model.dart';
 import 'package:invoice/view_models/base_view_model.dart';
 
@@ -34,6 +34,7 @@ class InvoiceViewModel extends BaseViewModel {
       if (invoiceList != null) {
         await getInvoiceStatus();
         setState(ViewStatus.Completed);
+        notifyListeners();
       } else {
         setState(ViewStatus.Error, 'Invoice list not found');
       }
@@ -50,6 +51,7 @@ class InvoiceViewModel extends BaseViewModel {
       _invoice = invoiceList!.firstWhere((element) => element.id == invoiceId);
       if (_invoice != null) {
         setState(ViewStatus.Completed);
+        notifyListeners();
       } else {
         setState(ViewStatus.Error, 'Invoice not found');
       }
@@ -74,6 +76,7 @@ class InvoiceViewModel extends BaseViewModel {
           .toList();
 
       invoiceStatus = distinctStatuses;
+      notifyListeners();
     } else {
       invoiceStatus = [];
     }

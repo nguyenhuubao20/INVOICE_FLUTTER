@@ -16,6 +16,7 @@ class InvoiceTemplateViewModel extends BaseViewModel {
           await InvoiceTemplateAPI().getTemplateByOrganizationId();
       invoiceTemplates = invoiceFetch;
       setState(ViewStatus.Completed);
+      notifyListeners();
     } catch (e) {
       setState(ViewStatus.Error, 'Failed to load invoice templates');
     }

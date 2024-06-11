@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:horizontal_week_calendar/horizontal_week_calendar.dart';
-import 'package:intl/intl.dart';
-import 'package:invoice/enums/invoice_status.dart';
 import 'package:invoice/enums/view_status.dart';
 import 'package:invoice/models/account.dart';
-import 'package:invoice/models/invoice.dart';
-import 'package:invoice/utils/route_constrant.dart';
+import 'package:invoice/models/invoice/invoice.dart';
 import 'package:invoice/utils/theme.dart';
 import 'package:invoice/view_models/invoice_view_model.dart';
 import 'package:invoice/view_models/organization_view_model.dart';
@@ -15,7 +12,9 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../models/store.dart';
+import '../../utils/route_constrant.dart';
 import '../../view_models/account_view_model.dart';
+import '../../widgets/other_dialogs/store_list_bottom_sheet.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -29,7 +28,7 @@ class _HomePageState extends State<HomePage> {
   ScrollController _invoicescrollController = ScrollController();
   int selectedMenu = 0;
   List<Invoice>? displayedInvoices = [];
-  List<String>? storeNames = [];
+  late InvoiceReport? invoiceReports;
   Account? account;
   final AccountViewModel _accountViewModel = Get.find<AccountViewModel>();
   final InvoiceViewModel _invoiceViewModel = Get.find<InvoiceViewModel>();
@@ -45,7 +44,6 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _invoiceViewModel.loadInvoice();
     _organizationViewModel.getStoreByOrganizationId();
-    storeNames = _organizationViewModel.storeNames;
     tz.initializeTimeZones();
     final vietnam = tz.getLocation('Asia/Ho_Chi_Minh');
     final now = tz.TZDateTime.now(vietnam);
@@ -75,10 +73,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.red,
         automaticallyImplyLeading: false,
+        elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -86,44 +85,30 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         actions: [
-          Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [],
-                ),
-              ),
-            ],
+          IconButton(
+            icon: Icon(Icons.notifications),
+            color: Colors.white,
+            onPressed: () {},
           ),
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.notifications),
-                onPressed: () {},
-              )
-            ],
+          IconButton(
+            icon: Icon(Icons.logout),
+            color: Colors.white,
+            onPressed: () {
+              Get.find<AccountViewModel>().signOut();
+            },
           ),
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.logout),
-                onPressed: () {
-                  Get.find<AccountViewModel>().signOut();
-                },
-              )
-            ],
-          )
         ],
       ),
       body: SafeArea(
-        child: Container(
-          padding: EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              SizedBox(height: 8.0),
-              Container(
-                padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        child: CustomScrollView(
+          slivers: <Widget>[
+            SliverAppBar(
+              elevation: 0,
+              backgroundColor: Colors.red,
+              automaticallyImplyLeading: false,
+              pinned: true,
+              floating: false,
+              title: Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
@@ -131,19 +116,23 @@ class _HomePageState extends State<HomePage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Icon(Icons.store, color: Colors.grey[600]),
-                        SizedBox(width: 8.0),
-                        Text(
-                          'Store',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.bold,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 16.0),
+                      child: Row(
+                        children: [
+                          Icon(Icons.store, color: Colors.red),
+                          const SizedBox(width: 8.0),
+                          Text(
+                            'Store',
+                            style: TextStyle(
+                              fontSize: 16.0,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     Container(
                       decoration: BoxDecoration(
@@ -152,63 +141,53 @@ class _HomePageState extends State<HomePage> {
                       child: InkWell(
                         onTap: () {
                           showBottomSheet(
+                            backgroundColor: Colors.white,
                             context: context,
-                            builder: (BuildContext context) => SizedBox(
-                              height: MediaQuery.of(context).size.height * 0.8,
-                              child: ScopedModel<OrganizationViewModel>(
-                                model: _organizationViewModel,
-                                child: ScopedModelDescendant<
-                                    OrganizationViewModel>(
-                                  builder: (context, child, model) {
-                                    if (model.status == ViewStatus.Completed) {
-                                      List<Store>? storeList = model.storeList;
-                                      if (storeList != null &&
-                                          storeList.isNotEmpty) {
-                                        return ListView.builder(
-                                          shrinkWrap: true,
-                                          itemCount: storeList.length,
-                                          itemBuilder: (BuildContext context,
-                                              int index) {
-                                            final Store store =
-                                                storeList[index];
-                                            return ListTile(
-                                              title: Text(store.name ?? '',
-                                                  style: TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 16.0,
-                                                  )),
-                                              onTap: () {
-                                                setState(() {
-                                                  selectedStore = store.name;
-                                                });
-                                                Get.back();
-                                              },
-                                            );
-                                          },
-                                        );
-                                      }
+                            builder: (BuildContext context) =>
+                                ScopedModel<OrganizationViewModel>(
+                              model: _organizationViewModel,
+                              child:
+                                  ScopedModelDescendant<OrganizationViewModel>(
+                                builder: (context, child, model) {
+                                  if (model.status == ViewStatus.Completed) {
+                                    List<Store>? storeList = model.storeList;
+                                    if (storeList != null &&
+                                        storeList.isNotEmpty) {
+                                      return StoreListBottomSheet(
+                                        storeList: storeList,
+                                        onSelectStore: (selectedStore) {
+                                          setState(() {
+                                            this.selectedStore = selectedStore;
+                                          });
+                                        },
+                                      );
+                                    } else {
+                                      return const Center(
+                                        child: Text('No store found'),
+                                      );
                                     }
-                                    return Container();
-                                  },
-                                ),
+                                  }
+                                  return Container();
+                                },
                               ),
                             ),
                           );
                         },
                         child: Container(
-                          padding: EdgeInsets.all(16),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 16.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
                                 selectedStore ?? 'Select Store',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 16.0,
                                   color: Colors.black,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Icon(
+                              const Icon(
                                 Icons.arrow_drop_down,
                                 color: Colors.black,
                               ),
@@ -220,13 +199,16 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              SizedBox(height: 16.0),
-              Container(
+            ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 16.0),
+            ),
+            SliverToBoxAdapter(
+              child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
                 ),
-                padding: EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
                 child: HorizontalWeekCalendar(
                   minDate: minDate,
                   maxDate: maxDate,
@@ -252,238 +234,110 @@ class _HomePageState extends State<HomePage> {
                   monthColor: Colors.black,
                 ),
               ),
-              SizedBox(height: 16.0),
-              Padding( 
-                padding: const EdgeInsets.all(0.0),
-                child: Container(
-                  height: MediaQuery.of(context).size.height * 0.3,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      // BoxShadow(
-                      //   color: Colors.grey.withOpacity(0.5),
-                      //   spreadRadius: 1,
-                      //   blurRadius: 2,
-                      //   offset: Offset(0, 2),
-                      // ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.all(32.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    DateFormat('dd-MM-yyyy')
-                                        .format(selectedDate),
-                                    style: TextStyle(
-                                      fontSize: 16.0,
-                                      color: Colors.grey[500],
-                                    ),
-                                  ),
-                                  Text(
-                                    'VND 0',
-                                    style: TextStyle(
-                                      fontSize: 24.0,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(width: 16.0),
-                              Column(
-                                children: [
-                                  Container(
-                                    child: Image.asset(
-                                      "assets/images/chart.png",
-                                      width: 100,
-                                      height: 100,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              ScopedModel<InvoiceViewModel>(
-                model: _invoiceViewModel,
+            ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 16.0),
+            ),
+            SliverToBoxAdapter(
+              child: ScopedModel<InvoiceViewModel>(
+                model: Get.find<InvoiceViewModel>(),
                 child: ScopedModelDescendant<InvoiceViewModel>(
                   builder: (context, child, model) {
                     if (model.status == ViewStatus.Loading) {
-                      return Center(child: CircularProgressIndicator());
+                      return const Center(child: CircularProgressIndicator());
                     } else if (model.status == ViewStatus.Error) {
-                      return Center(child: Text('Failed to load invoices'));
+                      return const Center(
+                          child: Text('Failed to load invoices'));
                     } else if (model.status == ViewStatus.Completed &&
                         model.invoiceList != null) {
-                      return CustomScrollView(
-                        slivers: <Widget>[
-                          SliverAppBar(
-                            backgroundColor: Colors.grey[100],
-                            pinned: true,
-                            expandedHeight: 50.0,
-                            automaticallyImplyLeading:
-                                false, // This will remove the back arrow
-                            title: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: [
-                                  for (var _invoiceStatus
-                                      in InvoiceStatus.values) ...[
-                                    InkWell(
-                                      onTap: () {
-                                        setState(() {
-                                          selectedMenu = _invoiceStatus.index;
-                                          setInvoiceList(_invoiceStatus
-                                              .toString()
-                                              .split('.')
-                                              .last);
-                                        });
-                                      },
-                                      child: Container(
-                                        padding: EdgeInsets.symmetric(
-                                            vertical: 8.0, horizontal: 12.0),
-                                        decoration: BoxDecoration(
-                                          border: Border(
-                                            bottom: BorderSide(
-                                              color: selectedMenu ==
-                                                      _invoiceStatus.index
-                                                  ? ThemeColor.primary
-                                                  : Colors.transparent,
-                                              width: 2.0,
-                                            ),
-                                          ),
-                                        ),
-                                        child: Text(
-                                          _invoiceStatus
-                                              .toString()
-                                              .split('.')
-                                              .last,
-                                          style: TextStyle(
-                                            fontSize: 15.0,
-                                            color: selectedMenu ==
-                                                    _invoiceStatus.index
-                                                ? ThemeColor.primary
-                                                : Colors.black,
-                                            fontWeight: selectedMenu ==
-                                                    _invoiceStatus.index
-                                                ? FontWeight.bold
-                                                : FontWeight.normal,
-                                          ),
+                      return Column(
+                        children: [
+                          for (var invoice in model.invoiceList!) ...[
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.9,
+                              child: InkWell(
+                                onTap: () {
+                                  Get.toNamed(
+                                    "${RouteHandler.INVOICE_DETAIL}?id=${invoice.id}",
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(16.0),
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.2,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20.0),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.5),
+                                        spreadRadius: 1,
+                                        blurRadius: 2,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Text(invoice.totalAmount.toString()),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                                'Invoice Code: ${invoice.invoiceCode}'),
+                                            Text(
+                                                'Created Date: ${invoice.createdDate}'),
+                                          ],
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ),
-                          SliverList(
-                            delegate: SliverChildListDelegate([
-                              for (var invoice in model.invoiceList!) ...[
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: InkWell(
-                                    onTap: () {
-                                      Get.toNamed(
-                                        "${RouteHandler.INVOICE_DETAIL}?id=${invoice.id}",
-                                      );
-                                    },
-                                    child: Container(
-                                      padding: EdgeInsets.all(16.0),
-                                      width: MediaQuery.of(context).size.width *
-                                          0.9,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius:
-                                            BorderRadius.circular(20.0),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey.withOpacity(0.5),
-                                            spreadRadius: 1,
-                                            blurRadius: 2,
-                                            offset: Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Text(invoice.totalAmount.toString()),
-                                          Expanded(
-                                            flex: 2,
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                    'Invoice Code: ${invoice.invoiceCode}'),
-                                                Text(
-                                                    'Created Date: ${invoice.createdDate}'),
-                                              ],
-                                            ),
-                                          ),
-                                          Expanded(
-                                            flex: 3,
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.end,
-                                              children: [
-                                                Container(
-                                                  padding: EdgeInsets.all(8.0),
-                                                  decoration: BoxDecoration(
-                                                    color: getStatusColor(
-                                                        invoice.status),
-                                                    border: Border.all(
-                                                      color: getBorderColor(
-                                                          invoice.status),
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8.0),
-                                                  ),
-                                                  child: Text(
-                                                      (invoiceStatusFromString(
-                                                              invoice.status ??
-                                                                  5))
-                                                          .toString()),
+                                      Expanded(
+                                        flex: 3,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              decoration: BoxDecoration(
+                                                color: getStatusColor(
+                                                    invoice.status),
+                                                border: Border.all(
+                                                  color: getBorderColor(
+                                                      invoice.status),
                                                 ),
-                                                Text(
-                                                    'Payment Method: ${invoice.paymentMethod}'),
-                                              ],
+                                                borderRadius:
+                                                    BorderRadius.circular(8.0),
+                                              ),
                                             ),
-                                          ),
-                                          SizedBox(width: 16.0),
-                                        ],
+                                            Text(
+                                                'Payment Method: ${invoice.paymentMethod}'),
+                                          ],
+                                        ),
                                       ),
-                                    ),
+                                      const SizedBox(width: 16.0),
+                                    ],
                                   ),
                                 ),
-                                SizedBox(height: 16.0),
-                              ],
-                            ]),
-                          ),
+                              ),
+                            ),
+                            const SizedBox(height: 16.0),
+                          ],
                         ],
                       );
                     } else {
-                      return Center(child: Text('No invoices found'));
+                      return SliverToBoxAdapter(
+                          child:
+                              const Center(child: Text('No invoices found')));
                     }
                   },
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -506,7 +360,7 @@ Widget buildGreeting(AccountViewModel _accountViewModel) {
   return Row(
     children: [
       Image.asset(assetPath, width: 30, height: 50),
-      SizedBox(width: 8),
+      const SizedBox(width: 8),
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -514,7 +368,7 @@ Widget buildGreeting(AccountViewModel _accountViewModel) {
             '$greeting',
             style: TextStyle(
               fontSize: 16.0,
-              color: Colors.grey[500]!,
+              color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),

@@ -6,7 +6,7 @@ import 'package:invoice/utils/theme.dart';
 import 'package:invoice/view_models/invoice_view_model.dart';
 import 'package:scoped_model/scoped_model.dart';
 
-import '../../models/invoice.dart';
+import '../../models/invoice/invoice.dart';
 
 class InvoiceDetail extends StatefulWidget {
   final String invoiceId;
@@ -189,7 +189,7 @@ class _InvoiceDetailState extends State<InvoiceDetail> {
                                             ? 'Finished'
                                             : 'ccccc'),
                                         Text(invoice!.createdDate.toString()),
-                                        Text(invoice!.updatedDate.toString()),
+                                        // Text(invoice!.updatedDate.toString()),
                                       ],
                                     ),
                                     Row(

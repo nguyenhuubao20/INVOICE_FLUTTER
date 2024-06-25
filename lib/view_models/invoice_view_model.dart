@@ -16,7 +16,7 @@ class InvoiceViewModel extends BaseViewModel {
   List<Invoice> _invoiceList = [];
   List<Invoice> get invoiceList => _invoiceList;
 
-  late InvoiceHistoryPartner _invoiceHistoryPartner;
+  late InvoiceHistoryPartner? _invoiceHistoryPartner;
   InvoiceHistoryPartner? get invoiceHistoryPartner => _invoiceHistoryPartner;
 
   List<InvoiceDetail>? invoiceDetail = [];
@@ -93,22 +93,6 @@ class InvoiceViewModel extends BaseViewModel {
     return false;
   }
 
-  Future<void> loadInvoiceDetail(String invoiceId, int page) async {
-    try {
-      setState(ViewStatus.Loading);
-      await Future.delayed(const Duration(seconds: 1));
-      _invoice = invoiceList!.firstWhere((element) => element.id == invoiceId);
-      if (_invoice != null) {
-        setState(ViewStatus.Completed);
-        notifyListeners();
-      } else {
-        setState(ViewStatus.Error, 'Invoice not found');
-      }
-    } catch (e) {
-      setState(ViewStatus.Error, 'Failed to load invoice details');
-    }
-  }
-
   Future<void> getInvoiceHistoryPartner(String invoiceId) async {
     try {
       setState(ViewStatus.Loading);
@@ -116,7 +100,6 @@ class InvoiceViewModel extends BaseViewModel {
       _invoiceHistoryPartner =
           (await InvoiceAPI().getInvoiceHistoryPartner(invoiceId))!;
       if (_invoiceHistoryPartner != null) {
-        getInvoiceHistoryPartnerSync(invoiceId);
         setState(ViewStatus.Completed);
         notifyListeners();
       } else {
@@ -138,9 +121,5 @@ class InvoiceViewModel extends BaseViewModel {
 
   List<Invoice> getInvoiceListByStoreIdSync(String? idStore) {
     return invoiceList.where((element) => element.storeId == idStore).toList();
-  }
-
-  InvoiceHistoryPartner getInvoiceHistoryPartnerSync(String invoiceId) {
-    return invoiceHistoryPartner!;
   }
 }

@@ -406,6 +406,7 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                           ),
+                          SizedBox(height: 20),
                         ],
                       ),
                     ),
@@ -462,86 +463,83 @@ Widget _buildContent(InvoiceViewModel model) {
       itemBuilder: (context, index) {
         var displayedInvoices = model.invoiceList[index];
         return InkWell(
-          child: Column(
-            children: [
-              ListTile(
-                title: Text(
-                  '${displayedInvoices.invoiceCode}',
-                  style: TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
+          child: Container(
+            margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            padding: EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  spreadRadius: 1,
+                  blurRadius: 5,
+                  offset: Offset(0, 3), // changes position of shadow
                 ),
-                subtitle: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: 16),
-                        Text(
-                          '${displayedInvoices.paymentMethod}',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            color: Colors.grey,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'Total: ${displayedInvoices.totalAmount}',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+              ],
+            ),
+            child: Column(
+              children: [
+                ListTile(
+                  title: Text(
+                    '# ${displayedInvoices.invoiceCode}',
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 1.0,
-                            horizontal: 8.0,
-                          ),
-                          child: Text(
-                            invoiceStatusFromString(displayedInvoices.status),
-                            style: TextStyle(
-                              fontSize: 16.0,
-                              color: getBorderColor(displayedInvoices.status),
-                              fontWeight: FontWeight.bold,
+                  ),
+                  subtitle: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildRowWithIcon(Icons.code_off,
+                              '${displayedInvoices.lookupCode}', Colors.grey),
+                          _buildRowWithIcon(
+                              Icons.payment,
+                              '${displayedInvoices.paymentMethod}',
+                              Colors.grey),
+                          _buildRowWithIcon(
+                              null,
+                              'Total: ${displayedInvoices.totalAmount}',
+                              Colors.black),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 1.0,
+                              horizontal: 8.0,
+                            ),
+                            child: Text(
+                              invoiceStatusFromString(displayedInvoices.status),
+                              style: TextStyle(
+                                fontSize: 16.0,
+                                color: getBorderColor(displayedInvoices.status),
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ),
-                        Text(
-                          '${timeago.format(DateTime.parse(displayedInvoices.createdDate!))}',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            color: Colors.grey,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          '${DateFormat('d MMMM').format(DateTime.parse(displayedInvoices.createdDate!))}',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            color: Colors.grey,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          _buildRowWithIcon(
+                              Icons.access_time,
+                              '${timeago.format(DateTime.parse(displayedInvoices.createdDate!))}',
+                              Colors.grey),
+                          _buildRowWithIcon(
+                              Icons.calendar_month,
+                              '${DateFormat('d MMMM').format(DateTime.parse(displayedInvoices.createdDate!))}',
+                              Colors.grey),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Container(
-                color: Colors.grey,
-                height: 1,
-              ),
-            ],
+              ],
+            ),
           ),
           onTap: () => Get.toNamed(
             '${RouteHandler.INVOICE_DETAIL}?id=${displayedInvoices.id}',
@@ -642,4 +640,21 @@ Color getBorderColor(int? status) {
     default:
       return Colors.grey;
   }
+}
+
+Widget _buildRowWithIcon(IconData? icon, String text, Color textColor) {
+  return Row(
+    children: [
+      if (icon != null) Icon(icon, color: textColor, size: 16.0),
+      if (icon != null) SizedBox(width: 8.0),
+      Text(
+        text,
+        style: TextStyle(
+          fontSize: 16.0,
+          color: textColor,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ],
+  );
 }

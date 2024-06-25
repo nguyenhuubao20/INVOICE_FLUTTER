@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:mrx_charts/mrx_charts.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -85,31 +88,87 @@ class _DashboardRevenueState extends State<DashboardRevenue> {
                       alignment: WrapAlignment.center,
                       children: [
                         StatusCard(
+                          width: 175,
+                          height: 85,
                           title: 'Pending',
                           value: model.invoiceReports?.pending ?? 0,
                           color: getBorderColor(0),
                         ),
                         StatusCard(
-                          title: 'Sent',
+                          width: 175,
+                          height: 85,
+                          title: 'Pending Approval',
                           value: model.invoiceReports?.sent ?? 0,
                           color: getBorderColor(1),
                         ),
                         StatusCard(
-                          title: 'Pending Approval',
+                          width: 100,
+                          height: 100,
+                          title: 'Sent',
                           value: model.invoiceReports?.pendingApproval ?? 0,
                           color: getBorderColor(2),
                         ),
                         StatusCard(
+                          width: 100,
+                          height: 100,
                           title: 'Completed',
                           value: model.invoiceReports?.completed ?? 0,
                           color: getBorderColor(2),
                         ),
                         StatusCard(
+                          width: 100,
+                          height: 100,
                           title: 'Failed',
                           value: model.invoiceReports?.failed ?? 0,
                           color: getBorderColor(4),
                         ),
                       ],
+                    ),
+                    SizedBox(height: 16.0),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.4,
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      child: Chart(
+                        layers: [
+                          ChartAxisLayer(
+                            settings: ChartAxisSettings(
+                              x: ChartAxisSettingsAxis(
+                                frequency: 1.0,
+                                max: 13.0,
+                                min: 7.0,
+                                textStyle: TextStyle(
+                                  color: Colors.black.withOpacity(0.6),
+                                  fontSize: 10.0,
+                                ),
+                              ),
+                              y: ChartAxisSettingsAxis(
+                                frequency: 100.0,
+                                max: 300.0,
+                                min: 0.0,
+                                textStyle: TextStyle(
+                                  color: Colors.black.withOpacity(0.6),
+                                  fontSize: 10.0,
+                                ),
+                              ),
+                            ),
+                            labelX: (value) => value.toInt().toString(),
+                            labelY: (value) => value.toInt().toString(),
+                          ),
+                          ChartLineLayer(
+                            items: List.generate(
+                              13 - 7 + 1,
+                              (index) => ChartLineDataItem(
+                                value: Random().nextInt(280) + 20,
+                                x: index.toDouble() + 7,
+                              ),
+                            ),
+                            settings: const ChartLineSettings(
+                              thickness: 2.0,
+                              color: Color.fromARGB(255, 25, 183, 218),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

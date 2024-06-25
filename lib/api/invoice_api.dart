@@ -131,7 +131,7 @@ class InvoiceAPI {
     }
   }
 
-  Future<InvoiceHistoryPartner?> getInvoiceHistoryPartner(
+  Future<InvoiceHistoryPartner?>? getInvoiceHistoryPartner(
       String invoiceId) async {
     var params = {
       'id': invoiceId,

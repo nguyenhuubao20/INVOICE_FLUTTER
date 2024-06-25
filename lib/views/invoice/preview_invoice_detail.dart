@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:invoice/enums/view_status.dart';
+import 'package:invoice/models/invoice_history_partner.dart';
 import 'package:invoice/view_models/invoice_view_model.dart';
 import 'package:scoped_model/scoped_model.dart';
-import 'package:timelines_plus/timelines_plus.dart';
 
 import '../../models/invoice.dart';
 
@@ -18,6 +18,7 @@ class PreviewInvoiceDetail extends StatefulWidget {
 
 class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
   Invoice? invoice;
+  InvoiceHistoryPartner? invoiceHistoryPartner;
   int selectedFunctionIndex = 0;
 
   @override
@@ -73,35 +74,6 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                         children: [
                                           Column(
                                             children: [
-                                              Container(
-                                                width: MediaQuery.of(context)
-                                                        .size
-                                                        .width *
-                                                    0.5,
-                                                child:
-                                                    FixedTimeline.tileBuilder(
-                                                  direction: Axis.vertical,
-                                                  builder: TimelineTileBuilder
-                                                      .connectedFromStyle(
-                                                    connectionDirection:
-                                                        ConnectionDirection
-                                                            .before,
-                                                    connectorStyleBuilder:
-                                                        (context, index) {
-                                                      return (index == 1)
-                                                          ? ConnectorStyle
-                                                              .dashedLine
-                                                          : ConnectorStyle
-                                                              .solidLine;
-                                                    },
-                                                    indicatorStyleBuilder:
-                                                        (context, index) =>
-                                                            IndicatorStyle.dot,
-                                                    itemExtent: 40.0,
-                                                    itemCount: 3,
-                                                  ),
-                                                ),
-                                              ),
                                               const Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment
@@ -135,7 +107,49 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                     ),
                                                   ),
                                                   Text(
-                                                    '${model.invoiceHistoryPartner!.vnPayInvoiceStatus.invoiceStatus}',
+                                                    '${model.invoiceHistoryPartner?.vnPayInvoiceStatus.tvanStatus}',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    'Tvan status:',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.normal,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '${model.invoiceHistoryPartner?.vnPayInvoiceStatus.tvanStatus}',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    'Status of invoice:',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.normal,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '${model.invoiceHistoryPartner?.vnPayInvoiceStatus.invoiceStatus}',
                                                     style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,

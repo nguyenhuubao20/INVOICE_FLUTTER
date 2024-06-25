@@ -40,12 +40,20 @@ class DefaultFirebaseOptions {
     storageBucket: 'YOUR_STORAGE_BUCKET',
   );
 
+  // static const FirebaseOptions android = FirebaseOptions(
+  // apiKey: 'AIzaSyDBdI1Wb6LgZ43R5tQT3tf5IM-OjU_Jzss',
+  // appId: '1:397900811423:android:d586552163d52f43e5e6aa',
+  // messagingSenderId: '397900811423',
+  // projectId: 'reso-a051a',
+  // storageBucket: 'YOUR_STORAGE_BUCKET',
+  // );
+
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDBdI1Wb6LgZ43R5tQT3tf5IM-OjU_Jzss',
-    appId: '1:397900811423:android:d586552163d52f43e5e6aa',
+    apiKey: '',
+    appId: '',
     messagingSenderId: '397900811423',
     projectId: 'reso-a051a',
-    // storageBucket: 'YOUR_STORAGE_BUCKET',
+    storageBucket: 'YOUR_STORAGE_BUCKET',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(

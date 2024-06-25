@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "397900811423",
-    "project_id": "reso-a051a",
-    "storage_bucket": "reso-a051a.appspot.com"
+    "project_number": "167419533769",
+    "project_id": "reso1-eff2b",
+    "storage_bucket": "reso1-eff2b.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:397900811423:android:d586552163d52f43e5e6aa",
+        "mobilesdk_app_id": "1:167419533769:android:d6e4da86a7516bc673f018",
         "android_client_info": {
           "package_name": "com.example.invoice"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDBdI1Wb6LgZ43R5tQT3tf5IM-OjU_Jzss"
+          "current_key": "AIzaSyAI5VZVfj_eeC5N3R3_j-mdzBqV4L9xSe4"
         }
       ],
       "services": {

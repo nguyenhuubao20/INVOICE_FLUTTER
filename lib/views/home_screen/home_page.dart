@@ -107,9 +107,7 @@ class _HomePageState extends State<HomePage> {
   void _onSearchChanged(String value) {
     selectedname = value;
 
-    if (mounted) {
-      setInvoiceToDisplayed(selectedDateStr, selectedDate);
-    }
+    setInvoiceToDisplayed(selectedDateStr, selectedDate);
   }
 
   void _onStatusChanged(String? newStatus) {
@@ -140,11 +138,38 @@ class _HomePageState extends State<HomePage> {
       _selectedStatus = newStatus;
     });
 
-    if (mounted) {
-      setInvoiceToDisplayed(
-        selectedStore,
-        selectedDate,
-      );
+    setInvoiceToDisplayed(
+      selectedStore,
+      selectedDate,
+    );
+  }
+
+  void _onRefresh() async {
+    final result = await _invoiceViewModel.loadInvoice(
+      selectedDateStr,
+      selectedStore,
+      _selectedStatusIndex,
+      selectedname,
+      isRefresh: true,
+    );
+    if (result) {
+      refreshController.refreshCompleted();
+    } else {
+      refreshController.refreshFailed();
+    }
+  }
+
+  void _onLoading() async {
+    final result = await _invoiceViewModel.loadInvoice(
+      selectedDateStr,
+      selectedStore,
+      _selectedStatusIndex,
+      selectedname,
+    );
+    if (result) {
+      refreshController.loadComplete();
+    } else {
+      refreshController.loadFailed();
     }
   }
 
@@ -384,185 +409,23 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                     ),
-                    SafeArea(
-                      child: SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.5,
-                        child: SmartRefresher(
-                          enablePullUp: true,
-                          onRefresh: () async {
-                            final model = Get.find<InvoiceViewModel>();
-                            final result = await model.loadInvoice(
-                              selectedDateStr,
-                              selectedStore,
-                              _selectedStatusIndex,
-                              selectedname,
-                              isRefresh: true,
-                            );
-                            if (result) {
-                              refreshController.refreshCompleted();
-                            } else {
-                              refreshController.refreshFailed();
-                            }
-                          },
-                          onLoading: () async {
-                            final model = Get.find<InvoiceViewModel>();
-                            final result = await model.loadInvoice(
-                              selectedDateStr,
-                              selectedStore,
-                              _selectedStatusIndex,
-                              selectedname,
-                            );
-                            if (result) {
-                              refreshController.loadComplete();
-                            } else {
-                              refreshController.loadFailed();
-                            }
-                          },
-                          controller: refreshController,
-                          child: ScopedModel<InvoiceViewModel>(
-                            model: Get.find<InvoiceViewModel>(),
-                            child: ScopedModelDescendant<InvoiceViewModel>(
-                              builder: (context, child, model) {
-                                if (model.status == ViewStatus.Loading) {
-                                  return Center(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                } else if (model.status == ViewStatus.Error) {
-                                  return Center(
-                                    child: Text(
-                                      'Some error occurred! Please try again later.',
-                                      style:
-                                          TextStyle(color: Color(0xff549FFD)),
-                                    ),
-                                  );
-                                } else if (model.status == ViewStatus.Empty) {
-                                  return Center(
-                                    child: Text(
-                                      'Invoice is not available now! Please try again later.',
-                                      style:
-                                          TextStyle(color: Color(0xff549FFD)),
-                                    ),
-                                  );
-                                } else if (model.status ==
-                                    ViewStatus.Completed) {
-                                  return ListView.builder(
-                                    itemCount: model.invoiceList.length,
-                                    itemBuilder: (context, index) {
-                                      var displayedInvoices =
-                                          model.invoiceList[index];
-                                      return InkWell(
-                                        child: Column(
-                                          children: [
-                                            ListTile(
-                                              title: Text(
-                                                '${displayedInvoices.invoiceCode}',
-                                                style: TextStyle(
-                                                  fontSize: 16.0,
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              subtitle: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      SizedBox(height: 16),
-                                                      Text(
-                                                        '${displayedInvoices.paymentMethod}',
-                                                        style: TextStyle(
-                                                          fontSize: 16.0,
-                                                          color: Colors.grey,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        'Total: ${displayedInvoices.totalAmount}',
-                                                        style: TextStyle(
-                                                          fontSize: 16.0,
-                                                          color: Colors.black,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment.end,
-                                                    children: [
-                                                      SizedBox(height: 16),
-                                                      Container(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                          vertical: 1.0,
-                                                          horizontal: 8.0,
-                                                        ),
-                                                        child: Text(
-                                                          invoiceStatusFromString(
-                                                              displayedInvoices
-                                                                  .status),
-                                                          style: TextStyle(
-                                                            fontSize: 16.0,
-                                                            color: getBorderColor(
-                                                                displayedInvoices
-                                                                    .status),
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        '${timeago.format(DateTime.parse(displayedInvoices.createdDate!))}',
-                                                        style: TextStyle(
-                                                          fontSize: 16.0,
-                                                          color: Colors.grey,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        '${DateFormat('d MMMM').format(DateTime.parse(displayedInvoices.createdDate!))}',
-                                                        style: TextStyle(
-                                                          fontSize: 16.0,
-                                                          color: Colors.grey,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Container(
-                                              color: Colors.grey,
-                                              height: 1,
-                                            ),
-                                          ],
-                                        ),
-                                        onTap: () => Get.toNamed(
-                                          '${RouteHandler.INVOICE_DETAIL}?id=${displayedInvoices.id}',
-                                        ),
-                                      );
-                                    },
-                                  );
-                                } else {
-                                  return Container();
-                                }
-                              },
+                    ScopedModel<InvoiceViewModel>(
+                      model: _invoiceViewModel,
+                      child: ScopedModelDescendant<InvoiceViewModel>(
+                        builder: (context, child, model) {
+                          return SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.4,
+                            child: SmartRefresher(
+                              enablePullUp: true,
+                              onRefresh: _onRefresh,
+                              onLoading: _onLoading,
+                              controller: refreshController,
+                              child: _buildContent(model),
                             ),
-                          ),
-                        ),
+                          );
+                        },
                       ),
-                    ),
+                    )
                   ],
                 ),
               ),
@@ -571,6 +434,123 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+}
+
+Widget _buildContent(InvoiceViewModel model) {
+  if (model.status == ViewStatus.Loading) {
+    return Center(
+      child: CircularProgressIndicator(),
+    );
+  } else if (model.status == ViewStatus.Error) {
+    return Center(
+      child: Text(
+        'Some error occurred! Please try again later.',
+        style: TextStyle(color: Color(0xff549FFD)),
+      ),
+    );
+  } else if (model.status == ViewStatus.Empty) {
+    return Center(
+      child: Text(
+        'Invoice is not available now! Please try again later.',
+        style: TextStyle(color: Color(0xff549FFD)),
+      ),
+    );
+  } else if (model.status == ViewStatus.Completed) {
+    return ListView.builder(
+      itemCount: model.invoiceList.length,
+      itemBuilder: (context, index) {
+        var displayedInvoices = model.invoiceList[index];
+        return InkWell(
+          child: Column(
+            children: [
+              ListTile(
+                title: Text(
+                  '${displayedInvoices.invoiceCode}',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                subtitle: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 16),
+                        Text(
+                          '${displayedInvoices.paymentMethod}',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Total: ${displayedInvoices.totalAmount}',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 1.0,
+                            horizontal: 8.0,
+                          ),
+                          child: Text(
+                            invoiceStatusFromString(displayedInvoices.status),
+                            style: TextStyle(
+                              fontSize: 16.0,
+                              color: getBorderColor(displayedInvoices.status),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '${timeago.format(DateTime.parse(displayedInvoices.createdDate!))}',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          '${DateFormat('d MMMM').format(DateTime.parse(displayedInvoices.createdDate!))}',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                color: Colors.grey,
+                height: 1,
+              ),
+            ],
+          ),
+          onTap: () => Get.toNamed(
+            '${RouteHandler.INVOICE_DETAIL}?id=${displayedInvoices.id}',
+          ),
+        );
+      },
+    );
+  } else {
+    return Container();
   }
 }
 

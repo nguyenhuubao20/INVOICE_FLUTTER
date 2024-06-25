@@ -30,8 +30,8 @@ Future<void> main() async {
     HttpOverrides.global = MyHttpOverrides();
   }
   WidgetsFlutterBinding.ensureInitialized();
-  DartPluginRegistrant.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.android);
+  DartPluginRegistrant.ensureInitialized();
   await FirebaseMessaging.instance.setAutoInitEnabled(true);
   await FireBaseNotification().init();
   setPathUrlStrategy();

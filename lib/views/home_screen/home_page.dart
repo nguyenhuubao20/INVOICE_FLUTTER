@@ -414,7 +414,7 @@ class _HomePageState extends State<HomePage> {
                       child: ScopedModelDescendant<InvoiceViewModel>(
                         builder: (context, child, model) {
                           return SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.4,
+                            height: MediaQuery.of(context).size.height * 0.5,
                             child: SmartRefresher(
                               enablePullUp: true,
                               onRefresh: _onRefresh,

@@ -7,6 +7,7 @@ class RouteHandler {
   static const String NAV = "/nav";
   static const String INVOICE_DETAIL = "/invoice-detail";
   static const String CREATE_INVOICE = "/create-invoice";
+  static const String PREVIEW_INVOICE_DETAIL = "/view-invoice-detail";
   static const String DASHBOARD = "/dashboard";
   static const String ADD_TEMPLATES = "/add-templates";
   static const String WELCOME = "/";

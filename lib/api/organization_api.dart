@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
-import 'package:invoice/models/invoice/invoice.dart';
+import 'package:invoice/models/invoice.dart';
+import 'package:invoice/models/organization.dart';
 import 'package:invoice/utils/request.dart';
 import 'package:invoice/utils/share_pref.dart';
 
@@ -9,6 +10,7 @@ class OrganizationAPI {
   static int page = 1;
   static int size = 10;
   List<Store> stores = [];
+  List<Organization> organization = [];
   late Map<String, dynamic> invoiceReports;
 
   Future<List<Store>> getStoreByOrganizationId() async {

@@ -3,12 +3,14 @@ import 'package:invoice/models/account.dart';
 import 'package:invoice/utils/request.dart';
 import 'package:invoice/utils/share_pref.dart';
 import 'package:invoice/view_models/base_view_model.dart';
+import 'package:invoice/view_models/brand_view_model.dart';
 import 'package:invoice/view_models/startup_view_model.dart';
 
 import '../api/account_api.dart';
 import '../enums/view_status.dart';
 import '../utils/route_constrant.dart';
 import '../widgets/other_dialogs/dialog.dart';
+import 'organization_view_model.dart';
 
 class AccountViewModel extends BaseViewModel {
   AccountAPI accountAPI = AccountAPI();
@@ -24,7 +26,8 @@ class AccountViewModel extends BaseViewModel {
     try {
       account = await accountAPI.signIn(username, password);
       if (account == null) {
-        // showAlertDialog(title: 'Lỗi đăng nhập', content: 'Không tìm thấy tài khoản');
+        showAlertDialog(
+            title: 'Lỗi đăng nhập', content: 'Có lôi xảy ra khi đăng nhập');
         return account;
       }
       if (account?.status == 0) {
@@ -36,6 +39,17 @@ class AccountViewModel extends BaseViewModel {
         await setOrganizationId(account?.organizationId ?? '');
         await setUserId(account?.id);
         await setToken(account?.accessToken);
+        switch (account!.role) {
+          case 0:
+            await Get.find<BrandViewModel>().loadOrganizationList();
+            break;
+          case 2:
+            await Get.find<OrganizationViewModel>().getStoreByOrganizationId();
+            break;
+          default:
+            // Handle other cases if needed
+            break;
+        }
         getBrandId();
         hideDialog();
         Get.snackbar('Thông báo', 'Đăng nhập thành công');
@@ -67,6 +81,7 @@ class AccountViewModel extends BaseViewModel {
   }
 
   Future<Account?> checkUserIsLogged() async {
+
     try {
       account = await accountAPI.checkUserIsLogged();
       if (account != null) {
@@ -78,6 +93,7 @@ class AccountViewModel extends BaseViewModel {
     } catch (e) {
       print('Error checking user login status: $e');
       return null;
+    } finally {
     }
   }
 

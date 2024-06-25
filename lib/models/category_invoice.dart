@@ -1,4 +1,4 @@
-import 'package:invoice/models/invoice/invoice.dart';
+import 'package:invoice/models/invoice.dart';
 
 class CategoryInvoice {
   final String name;

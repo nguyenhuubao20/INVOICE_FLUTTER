@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:get/get.dart';
-import 'package:invoice/models/invoice/invoice.dart';
+import 'package:invoice/models/invoice.dart';
 import 'package:invoice/view_models/account_view_model.dart';
 import 'package:invoice/view_models/base_view_model.dart';
 import 'package:invoice/widgets/other_dialogs/dialog.dart';
@@ -33,8 +33,8 @@ class OrganizationViewModel extends BaseViewModel {
           setState(ViewStatus.Error, 'Invoice list not found');
         }
       } else {
-        showAlertDialog(
-            title: 'Error', content: 'You have no access to load store list');
+        // showAlertDialog(
+        //     title: 'Error', content: 'You have no access to load store list');
       }
     } catch (e) {
       setState(ViewStatus.Error, 'Failed to load invoice list');

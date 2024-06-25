@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:horizontal_week_calendar/horizontal_week_calendar.dart';
+import 'package:intl/intl.dart';
 import 'package:invoice/enums/view_status.dart';
 import 'package:invoice/models/account.dart';
-import 'package:invoice/models/invoice/invoice.dart';
+import 'package:invoice/models/invoice.dart';
+import 'package:invoice/utils/route_constrant.dart';
 import 'package:invoice/utils/theme.dart';
 import 'package:invoice/view_models/invoice_view_model.dart';
 import 'package:invoice/view_models/organization_view_model.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../../enums/invoice_status.dart';
 import '../../models/store.dart';
-import '../../utils/route_constrant.dart';
 import '../../view_models/account_view_model.dart';
 import '../../widgets/other_dialogs/store_list_bottom_sheet.dart';
 
@@ -24,8 +28,17 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  ScrollController _scrollController = ScrollController();
-  ScrollController _invoicescrollController = ScrollController();
+  final RefreshController refreshController =
+      RefreshController(initialRefresh: true);
+  TextEditingController _searchController = TextEditingController();
+  List<String> _statuses = [
+    'All',
+    'Pending',
+    'Sent',
+    'PendingApproval',
+    'Completed',
+    'Failed'
+  ];
   int selectedMenu = 0;
   List<Invoice>? displayedInvoices = [];
   late InvoiceReport? invoiceReports;
@@ -34,28 +47,35 @@ class _HomePageState extends State<HomePage> {
   final InvoiceViewModel _invoiceViewModel = Get.find<InvoiceViewModel>();
   final OrganizationViewModel _organizationViewModel =
       Get.find<OrganizationViewModel>();
-  String? selectedStore = 'Select Store';
+  String? selectedStore;
   late DateTime selectedDate;
+  late String selectedDateStr;
+  late int? _selectedStatusIndex = -1;
+  late String? _selectedStatus = null;
+  late String selectedname = '';
   late DateTime minDate;
   late DateTime maxDate;
+  bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _invoiceViewModel.loadInvoice();
-    _organizationViewModel.getStoreByOrganizationId();
     tz.initializeTimeZones();
     final vietnam = tz.getLocation('Asia/Ho_Chi_Minh');
     final now = tz.TZDateTime.now(vietnam);
     minDate = DateTime(now.year - 1, now.month, now.day);
     maxDate = DateTime(now.year + 1, now.month, now.day);
-    selectedDate = now;
+    selectedDate = DateTime(now.year, now.month, now.day);
+    selectedDateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
+    _invoiceViewModel.loadInvoice(
+        selectedDateStr, selectedStore, _selectedStatusIndex, selectedname);
   }
 
-  void setInvoiceList(String status) {
-    displayedInvoices = _invoiceViewModel.invoiceList!
-        .where((element) => element.status == status)
-        .toList();
+  @override
+  void dispose() {
+    _searchController.dispose();
+    refreshController.dispose();
+    super.dispose();
   }
 
   void setSelectedMenu(int index) {
@@ -70,12 +90,70 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void setInvoiceToDisplayed(String? storeId, DateTime date) {
+    setState(() {
+      selectedDate = date;
+      selectedDateStr = DateFormat("yyyy-MM-dd").format(date);
+      _invoiceViewModel.loadInvoice(
+        selectedDateStr,
+        selectedStore,
+        _selectedStatusIndex,
+        selectedname,
+      );
+    });
+    refreshController.requestRefresh();
+  }
+
+  void _onSearchChanged(String value) {
+    selectedname = value;
+
+    if (mounted) {
+      setInvoiceToDisplayed(selectedDateStr, selectedDate);
+    }
+  }
+
+  void _onStatusChanged(String? newStatus) {
+    switch (newStatus) {
+      case 'All':
+        _selectedStatusIndex = -1;
+        break;
+      case 'Pending':
+        _selectedStatusIndex = 0;
+        break;
+      case 'Sent':
+        _selectedStatusIndex = 1;
+        break;
+      case 'PendingApproval':
+        _selectedStatusIndex = 2;
+        break;
+      case 'Completed':
+        _selectedStatusIndex = 3;
+        break;
+      case 'Failed':
+        _selectedStatusIndex = 4;
+        break;
+      default:
+        _selectedStatusIndex = 4;
+    }
+
+    setState(() {
+      _selectedStatus = newStatus;
+    });
+
+    if (mounted) {
+      setInvoiceToDisplayed(
+        selectedStore,
+        selectedDate,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.red,
+        backgroundColor: Color(0xff549FFD),
         automaticallyImplyLeading: false,
         elevation: 0,
         title: Column(
@@ -104,7 +182,7 @@ class _HomePageState extends State<HomePage> {
           slivers: <Widget>[
             SliverAppBar(
               elevation: 0,
-              backgroundColor: Colors.red,
+              backgroundColor: Color(0xff549FFD),
               automaticallyImplyLeading: false,
               pinned: true,
               floating: false,
@@ -121,7 +199,7 @@ class _HomePageState extends State<HomePage> {
                           vertical: 8.0, horizontal: 16.0),
                       child: Row(
                         children: [
-                          Icon(Icons.store, color: Colors.red),
+                          Icon(Icons.store, color: Color(0xff549FFD)),
                           const SizedBox(width: 8.0),
                           Text(
                             'Store',
@@ -145,7 +223,7 @@ class _HomePageState extends State<HomePage> {
                             context: context,
                             builder: (BuildContext context) =>
                                 ScopedModel<OrganizationViewModel>(
-                              model: _organizationViewModel,
+                              model: Get.find<OrganizationViewModel>(),
                               child:
                                   ScopedModelDescendant<OrganizationViewModel>(
                                 builder: (context, child, model) {
@@ -157,13 +235,20 @@ class _HomePageState extends State<HomePage> {
                                         storeList: storeList,
                                         onSelectStore: (selectedStore) {
                                           setState(() {
-                                            this.selectedStore = selectedStore;
+                                            for (var s in storeList) {
+                                              selectedStore = s.id!;
+                                              setInvoiceToDisplayed(
+                                                selectedStore,
+                                                selectedDate,
+                                              );
+                                            }
                                           });
                                         },
                                       );
                                     } else {
-                                      return const Center(
-                                        child: Text('No store found'),
+                                      return const StoreListBottomSheet(
+                                        storeList: [],
+                                        onSelectStore: null,
                                       );
                                     }
                                   }
@@ -200,9 +285,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 16.0),
-            ),
             SliverToBoxAdapter(
               child: Container(
                 decoration: BoxDecoration(
@@ -214,9 +296,7 @@ class _HomePageState extends State<HomePage> {
                   maxDate: maxDate,
                   initialDate: selectedDate,
                   onDateChange: (date) {
-                    setState(() {
-                      setFormattedDate(date);
-                    });
+                    setInvoiceToDisplayed(selectedStore, date);
                   },
                   showTopNavbar: true,
                   monthFormat: "MMMM yyyy",
@@ -235,105 +315,255 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 16.0),
-            ),
             SliverToBoxAdapter(
-              child: ScopedModel<InvoiceViewModel>(
-                model: Get.find<InvoiceViewModel>(),
-                child: ScopedModelDescendant<InvoiceViewModel>(
-                  builder: (context, child, model) {
-                    if (model.status == ViewStatus.Loading) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (model.status == ViewStatus.Error) {
-                      return const Center(
-                          child: Text('Failed to load invoices'));
-                    } else if (model.status == ViewStatus.Completed &&
-                        model.invoiceList != null) {
-                      return Column(
+              child: Container(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    Container(
+                      color: Colors.white,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          for (var invoice in model.invoiceList!) ...[
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.9,
-                              child: InkWell(
-                                onTap: () {
-                                  Get.toNamed(
-                                    "${RouteHandler.INVOICE_DETAIL}?id=${invoice.id}",
-                                  );
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(16.0),
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.2,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(20.0),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.5),
-                                        spreadRadius: 1,
-                                        blurRadius: 2,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Text(invoice.totalAmount.toString()),
-                                      Expanded(
-                                        flex: 2,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                                'Invoice Code: ${invoice.invoiceCode}'),
-                                            Text(
-                                                'Created Date: ${invoice.createdDate}'),
-                                          ],
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 3,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              decoration: BoxDecoration(
-                                                color: getStatusColor(
-                                                    invoice.status),
-                                                border: Border.all(
-                                                  color: getBorderColor(
-                                                      invoice.status),
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                            ),
-                                            Text(
-                                                'Payment Method: ${invoice.paymentMethod}'),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16.0),
-                                    ],
-                                  ),
-                                ),
+                          Container(
+                            width: MediaQuery.of(context).size.width * 0.6,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(16.0),
+                            ),
+                            child: TextFormField(
+                              controller: _searchController,
+                              onFieldSubmitted: (value) {
+                                _onSearchChanged(value);
+                              },
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                hintText: 'Search invoices',
+                                prefixIcon:
+                                    Icon(Icons.search, color: Colors.black),
                               ),
                             ),
-                            const SizedBox(height: 16.0),
-                          ],
+                          ),
+                          SizedBox(height: 10),
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16.0),
+                              color: Colors.grey[200],
+                            ),
+                            width: MediaQuery.of(context).size.width * 0.3,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 8.0),
+                                  child: DropdownButton<String>(
+                                    value: _selectedStatus,
+                                    hint: Text('Status'),
+                                    icon: Icon(Icons.filter_list),
+                                    iconSize: 24,
+                                    isExpanded: true,
+                                    underline: SizedBox(),
+                                    onChanged: (String? newValue) {
+                                      _onStatusChanged(newValue);
+                                    },
+                                    items: _statuses
+                                        .map<DropdownMenuItem<String>>(
+                                            (String value) {
+                                      return DropdownMenuItem<String>(
+                                        value: value,
+                                        child: Text(value),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
-                      );
-                    } else {
-                      return SliverToBoxAdapter(
-                          child:
-                              const Center(child: Text('No invoices found')));
-                    }
-                  },
+                      ),
+                    ),
+                    SafeArea(
+                      child: SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.5,
+                        child: SmartRefresher(
+                          enablePullUp: true,
+                          onRefresh: () async {
+                            final model = Get.find<InvoiceViewModel>();
+                            final result = await model.loadInvoice(
+                              selectedDateStr,
+                              selectedStore,
+                              _selectedStatusIndex,
+                              selectedname,
+                              isRefresh: true,
+                            );
+                            if (result) {
+                              refreshController.refreshCompleted();
+                            } else {
+                              refreshController.refreshFailed();
+                            }
+                          },
+                          onLoading: () async {
+                            final model = Get.find<InvoiceViewModel>();
+                            final result = await model.loadInvoice(
+                              selectedDateStr,
+                              selectedStore,
+                              _selectedStatusIndex,
+                              selectedname,
+                            );
+                            if (result) {
+                              refreshController.loadComplete();
+                            } else {
+                              refreshController.loadFailed();
+                            }
+                          },
+                          controller: refreshController,
+                          child: ScopedModel<InvoiceViewModel>(
+                            model: Get.find<InvoiceViewModel>(),
+                            child: ScopedModelDescendant<InvoiceViewModel>(
+                              builder: (context, child, model) {
+                                if (model.status == ViewStatus.Loading) {
+                                  return Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                } else if (model.status == ViewStatus.Error) {
+                                  return Center(
+                                    child: Text(
+                                      'Some error occurred! Please try again later.',
+                                      style:
+                                          TextStyle(color: Color(0xff549FFD)),
+                                    ),
+                                  );
+                                } else if (model.status == ViewStatus.Empty) {
+                                  return Center(
+                                    child: Text(
+                                      'Invoice is not available now! Please try again later.',
+                                      style:
+                                          TextStyle(color: Color(0xff549FFD)),
+                                    ),
+                                  );
+                                } else if (model.status ==
+                                    ViewStatus.Completed) {
+                                  return ListView.builder(
+                                    itemCount: model.invoiceList.length,
+                                    itemBuilder: (context, index) {
+                                      var displayedInvoices =
+                                          model.invoiceList[index];
+                                      return InkWell(
+                                        child: Column(
+                                          children: [
+                                            ListTile(
+                                              title: Text(
+                                                '${displayedInvoices.invoiceCode}',
+                                                style: TextStyle(
+                                                  fontSize: 16.0,
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              subtitle: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      SizedBox(height: 16),
+                                                      Text(
+                                                        '${displayedInvoices.paymentMethod}',
+                                                        style: TextStyle(
+                                                          fontSize: 16.0,
+                                                          color: Colors.grey,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        'Total: ${displayedInvoices.totalAmount}',
+                                                        style: TextStyle(
+                                                          fontSize: 16.0,
+                                                          color: Colors.black,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.end,
+                                                    children: [
+                                                      SizedBox(height: 16),
+                                                      Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                          vertical: 1.0,
+                                                          horizontal: 8.0,
+                                                        ),
+                                                        child: Text(
+                                                          invoiceStatusFromString(
+                                                              displayedInvoices
+                                                                  .status),
+                                                          style: TextStyle(
+                                                            fontSize: 16.0,
+                                                            color: getBorderColor(
+                                                                displayedInvoices
+                                                                    .status),
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        '${timeago.format(DateTime.parse(displayedInvoices.createdDate!))}',
+                                                        style: TextStyle(
+                                                          fontSize: 16.0,
+                                                          color: Colors.grey,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        '${DateFormat('d MMMM').format(DateTime.parse(displayedInvoices.createdDate!))}',
+                                                        style: TextStyle(
+                                                          fontSize: 16.0,
+                                                          color: Colors.grey,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Container(
+                                              color: Colors.grey,
+                                              height: 1,
+                                            ),
+                                          ],
+                                        ),
+                                        onTap: () => Get.toNamed(
+                                          '${RouteHandler.INVOICE_DETAIL}?id=${displayedInvoices.id}',
+                                        ),
+                                      );
+                                    },
+                                  );
+                                } else {
+                                  return Container();
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

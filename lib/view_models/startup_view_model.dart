@@ -1,8 +1,12 @@
 import 'package:get/get.dart';
 import 'package:invoice/view_models/base_view_model.dart';
+import 'package:invoice/view_models/brand_view_model.dart';
+import 'package:invoice/view_models/organization_view_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../models/account.dart';
 import '../utils/route_constrant.dart';
+import 'account_view_model.dart';
 
 class StartUpViewModel extends BaseViewModel {
   StartUpViewModel() {
@@ -21,13 +25,26 @@ class StartUpViewModel extends BaseViewModel {
       );
     }
     await Future.delayed(const Duration(seconds: 1));
+    _checkUserIsLogged();
+  }
 
-    // String? userId = await getUserId();
-    // if (userId != null) {
-    //   await Get.find<AccountViewModel>().getMembershipInfo(userId);
-    // }
-    // await Get.find<MenuViewModel>().getListStore();
-    // await Get.find<MenuViewModel>().getMenuOfBrand();
-    await Get.offAllNamed(RouteHandler.LOGIN);
+  Future<void> _checkUserIsLogged() async {
+    Account? account = await Get.find<AccountViewModel>().checkUserIsLogged();
+    if (account != null) {
+      switch (account.role) {
+        case 0:
+          await Get.find<BrandViewModel>().loadOrganizationList();
+          break;
+        case 2:
+          await Get.find<OrganizationViewModel>().getStoreByOrganizationId();
+          break;
+        default:
+          // Handle other cases if needed
+          break;
+      }
+      Get.toNamed(RouteHandler.HOME);
+    } else {
+      Get.offAllNamed(RouteHandler.LOGIN);
+    }
   }
 }

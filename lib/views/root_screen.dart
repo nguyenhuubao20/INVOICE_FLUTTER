@@ -5,7 +5,6 @@ import 'package:invoice/utils/route_constrant.dart';
 import '../utils/theme.dart';
 import 'chart/dashboard.dart';
 import 'home_screen/home_page.dart';
-import 'invoice/create_invoice.dart';
 
 class RootScreen extends StatefulWidget {
   final int idx;
@@ -20,7 +19,7 @@ class _RootScreenState extends State<RootScreen> {
   String? userId;
   List<Widget> portraitViews = [
     HomePage(),
-    CreateInvoice(),
+    // InvoiceItem(),
     Dashboard(),
     HomePage(),
   ];

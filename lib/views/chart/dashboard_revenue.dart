@@ -134,8 +134,8 @@ class _DashboardRevenueState extends State<DashboardRevenue> {
                             settings: ChartAxisSettings(
                               x: ChartAxisSettingsAxis(
                                 frequency: 1.0,
-                                max: 13.0,
-                                min: 7.0,
+                                max: 12.0,
+                                min: 1.0,
                                 textStyle: TextStyle(
                                   color: Colors.black.withOpacity(0.6),
                                   fontSize: 10.0,
@@ -156,10 +156,10 @@ class _DashboardRevenueState extends State<DashboardRevenue> {
                           ),
                           ChartLineLayer(
                             items: List.generate(
-                              13 - 7 + 1,
+                              12 - 1 + 1,
                               (index) => ChartLineDataItem(
                                 value: Random().nextInt(280) + 20,
-                                x: index.toDouble() + 7,
+                                x: index.toDouble() + 1,
                               ),
                             ),
                             settings: const ChartLineSettings(

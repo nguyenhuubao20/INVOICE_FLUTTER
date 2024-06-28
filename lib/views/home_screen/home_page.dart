@@ -18,6 +18,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../../enums/invoice_status.dart';
 import '../../models/store.dart';
 import '../../view_models/account_view_model.dart';
+import '../../widgets/other_dialogs/dialog.dart';
 import '../../widgets/other_dialogs/store_list_bottom_sheet.dart';
 
 class HomePage extends StatefulWidget {
@@ -32,12 +33,14 @@ class _HomePageState extends State<HomePage> {
       RefreshController(initialRefresh: true);
   TextEditingController _searchController = TextEditingController();
   List<String> _statuses = [
-    'All',
+    'Draft', // Bản nháp
+    'Success', // Gửi thành công
+    'Sent', // Đã gửi
+    'Pending Approval', // Đang chờ phê duyệt
+    'Completed', // Hoàn tất
+    'Failed', // Thất bại
     'Pending',
-    'Sent',
-    'PendingApproval',
-    'Completed',
-    'Failed'
+    'RetryPending', // Đang chờ thử lại
   ];
   int selectedMenu = 0;
   List<Invoice>? displayedInvoices = [];
@@ -115,23 +118,33 @@ class _HomePageState extends State<HomePage> {
       case 'All':
         _selectedStatusIndex = -1;
         break;
-      case 'Pending':
+      case 'Draft':
         _selectedStatusIndex = 0;
         break;
-      case 'Sent':
+      case 'Success':
         _selectedStatusIndex = 1;
         break;
-      case 'PendingApproval':
+      case 'Sent':
         _selectedStatusIndex = 2;
         break;
-      case 'Completed':
+      case 'Pending Approval':
         _selectedStatusIndex = 3;
         break;
-      case 'Failed':
+      case 'Completed':
         _selectedStatusIndex = 4;
         break;
+      case 'Failed':
+        _selectedStatusIndex = 5;
+        break;
+      case 'Pending':
+        _selectedStatusIndex = 6;
+        break;
+      case 'RetryPending':
+        _selectedStatusIndex = 7;
+        break;
       default:
-        _selectedStatusIndex = 4;
+        _selectedStatusIndex = -1;
+        break;
     }
 
     setState(() {
@@ -171,6 +184,10 @@ class _HomePageState extends State<HomePage> {
     } else {
       refreshController.loadFailed();
     }
+  }
+
+  void triggerRefresh() {
+    _onRefresh();
   }
 
   @override
@@ -374,7 +391,6 @@ class _HomePageState extends State<HomePage> {
                           Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(16.0),
-                              color: Colors.grey[200],
                             ),
                             width: MediaQuery.of(context).size.width * 0.3,
                             child: Column(
@@ -383,22 +399,59 @@ class _HomePageState extends State<HomePage> {
                                 Container(
                                   padding:
                                       EdgeInsets.symmetric(horizontal: 8.0),
-                                  child: DropdownButton<String>(
+                                  child: DropdownButtonFormField<String>(
                                     value: _selectedStatus,
                                     hint: Text('Status'),
                                     icon: Icon(Icons.filter_list),
                                     iconSize: 24,
                                     isExpanded: true,
-                                    underline: SizedBox(),
                                     onChanged: (String? newValue) {
                                       _onStatusChanged(newValue);
                                     },
+                                    decoration: InputDecoration(
+                                      labelText: 'Status',
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: Colors.blue, width: 1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: Colors.blue, width: 2),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.blue.shade50,
+                                      contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 8),
+                                    ),
                                     items: _statuses
                                         .map<DropdownMenuItem<String>>(
                                             (String value) {
                                       return DropdownMenuItem<String>(
                                         value: value,
-                                        child: Text(value),
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                            color: _selectedStatus == value
+                                                ? Colors.blue.shade100
+                                                : Colors.transparent,
+                                          ),
+                                          child: Text(
+                                            value,
+                                            style: TextStyle(
+                                              color: _selectedStatus == value
+                                                  ? Colors.blue.shade900
+                                                  : Colors.black,
+                                            ),
+                                          ),
+                                        ),
                                       );
                                     }).toList(),
                                   ),
@@ -421,7 +474,7 @@ class _HomePageState extends State<HomePage> {
                               onRefresh: _onRefresh,
                               onLoading: _onLoading,
                               controller: refreshController,
-                              child: _buildContent(model),
+                              child: _buildContent(model, this),
                             ),
                           );
                         },
@@ -438,7 +491,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-Widget _buildContent(InvoiceViewModel model) {
+Widget _buildContent(InvoiceViewModel model, _HomePageState state) {
   if (model.status == ViewStatus.Loading) {
     return Center(
       child: CircularProgressIndicator(),
@@ -462,6 +515,9 @@ Widget _buildContent(InvoiceViewModel model) {
       itemCount: model.invoiceList.length,
       itemBuilder: (context, index) {
         var displayedInvoices = model.invoiceList[index];
+        String? shortenedCode = displayedInvoices.invoiceCode!.length > 10
+            ? '${displayedInvoices.invoiceCode?.substring(0, 10)}...'
+            : displayedInvoices.invoiceCode;
         return InkWell(
           child: Container(
             margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -474,20 +530,33 @@ Widget _buildContent(InvoiceViewModel model) {
                   color: Colors.grey.withOpacity(0.5),
                   spreadRadius: 1,
                   blurRadius: 5,
-                  offset: Offset(0, 3), // changes position of shadow
+                  offset: Offset(0, 3),
                 ),
               ],
             ),
             child: Column(
               children: [
                 ListTile(
-                  title: Text(
-                    '# ${displayedInvoices.invoiceCode}',
-                    style: TextStyle(
-                      fontSize: 16.0,
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '# $shortenedCode',
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        invoiceStatusFromString(displayedInvoices.status),
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          color: getStatusColor(displayedInvoices.status),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                   subtitle: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -501,30 +570,11 @@ Widget _buildContent(InvoiceViewModel model) {
                               Icons.payment,
                               '${displayedInvoices.paymentMethod}',
                               Colors.grey),
-                          _buildRowWithIcon(
-                              null,
-                              'Total: ${displayedInvoices.totalAmount}',
-                              Colors.black),
                         ],
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          SizedBox(height: 16),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 1.0,
-                              horizontal: 8.0,
-                            ),
-                            child: Text(
-                              invoiceStatusFromString(displayedInvoices.status),
-                              style: TextStyle(
-                                fontSize: 16.0,
-                                color: getBorderColor(displayedInvoices.status),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
                           _buildRowWithIcon(
                               Icons.access_time,
                               '${timeago.format(DateTime.parse(displayedInvoices.createdDate!))}',
@@ -533,11 +583,48 @@ Widget _buildContent(InvoiceViewModel model) {
                               Icons.calendar_month,
                               '${DateFormat('d MMMM').format(DateTime.parse(displayedInvoices.createdDate!))}',
                               Colors.grey),
+                          _buildRowWithIcon(
+                              null,
+                              'Total: ${displayedInvoices.totalAmount}',
+                              Colors.black),
                         ],
                       ),
                     ],
                   ),
                 ),
+                SizedBox(height: 8),
+                if (displayedInvoices.status == 0)
+                  Column(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            bool confirmed = await showConfirmDialog(
+                              title: 'Approval Invoice',
+                              content: 'Do you want to approve this invoice?',
+                              confirmText: 'Yes',
+                            );
+                            if (confirmed) {
+                              model.approvalInvoice(
+                                  model.invoiceList[index].id!);
+                              state.triggerRefresh();
+                            } else {
+                              // Người dùng đã hủy bỏ hành động
+                            }
+                          },
+                          child: Text(
+                            'Waiting for approval',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ButtonStyle(
+                            backgroundColor:
+                                WidgetStateProperty.all(Colors.blue),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
               ],
             ),
           ),
@@ -608,37 +695,6 @@ String getGreeting() {
     return 'Good afternoon ';
   } else {
     return 'Good evening ';
-  }
-}
-
-// Helper functions to get status and border colors
-Color getStatusColor(int? status) {
-  switch (status) {
-    case 0:
-      return Colors.orange[100]!;
-    case 1:
-      return Colors.red[100]!;
-    case 2:
-      return Colors.green[100]!;
-    case 3:
-      return Colors.grey[200]!;
-    default:
-      return const Color.fromARGB(255, 180, 178, 178);
-  }
-}
-
-Color getBorderColor(int? status) {
-  switch (status) {
-    case 0:
-      return Colors.orange;
-    case 1:
-      return Colors.red;
-    case 2:
-      return Colors.green;
-    case 3:
-      return Colors.white;
-    default:
-      return Colors.grey;
   }
 }
 

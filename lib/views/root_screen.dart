@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:invoice/utils/route_constrant.dart';
+import 'package:invoice/views/settings/setting.dart';
 
 import '../utils/theme.dart';
 import 'chart/dashboard.dart';
@@ -19,14 +18,12 @@ class _RootScreenState extends State<RootScreen> {
   String? userId;
   List<Widget> portraitViews = [
     HomePage(),
-    // InvoiceItem(),
     Dashboard(),
-    HomePage(),
+    Setting(),
   ];
 
   List<BottomNavigationBarItem> items = const [
     BottomNavigationBarItem(icon: Icon(Icons.receipt), label: 'Invoice'),
-    BottomNavigationBarItem(icon: Icon(Icons.create_sharp), label: 'Create'),
     BottomNavigationBarItem(
         icon: Icon(Icons.dashboard_customize), label: 'Dashboard'),
     BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
@@ -51,20 +48,20 @@ class _RootScreenState extends State<RootScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        elevation: 2,
-        backgroundColor: ThemeColor.primary,
-        onPressed: () {
-          Get.toNamed(RouteHandler.CREATE_INVOICE);
-        },
-        child: Icon(
-          Icons.add,
-          size: 28,
-          color: Colors.white,
-        ),
-        shape: CircleBorder(),
-      ),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      // floatingActionButton: FloatingActionButton(
+      //   elevation: 2,
+      //   backgroundColor: ThemeColor.primary,
+      //   onPressed: () {
+      //     Get.toNamed(RouteHandler.CREATE_INVOICE);
+      //   },
+      //   child: Icon(
+      //     Icons.add,
+      //     size: 28,
+      //     color: Colors.white,
+      //   ),
+      //   shape: CircleBorder(),
+      // ),
       body: portraitViews[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         showUnselectedLabels: true,

@@ -1,40 +1,103 @@
 import 'package:flutter/material.dart';
 
 enum InvoiceStatus {
+  Draft, // Bản nháp
+  Success, // Gửi thành công
+  Sent, // Đã gửi
+  PendingApproval, // Đang chờ phê duyệt
+  Completed, // Hoàn tất
+  Failed, // Thất bại
   Pending,
-  Sent,
-  PendingApproval,
-  Completed,
-  Failed,
+  RetryPending, //Đang chờ thử lại
 }
 
 String invoiceStatusFromString(int? value) {
   switch (value) {
     case 0:
-      return 'Pending';
+      return 'Draft';
     case 1:
-      return 'Sent';
+      return 'Success';
     case 2:
-      return 'Pending Approval';
+      return 'Sent';
     case 3:
-      return 'Completed';
+      return 'PendingApproval';
     case 4:
+      return 'Completed';
+    case 5:
       return 'Failed';
+    case 6:
+      return 'Pending';
+    case 7:
+      return 'RetryPending';
     default:
       throw ArgumentError("Invalid value: $value");
   }
 }
 
-Color? getStatusColor(int? status) {
+String invoiceStatusFromInt(int? value) {
+  switch (value) {
+    case 0:
+      return 'Draft';
+    case 1:
+      return 'Success';
+    case 2:
+      return 'Sent';
+    case 3:
+      return 'PendingApproval';
+    case 4:
+      return 'Completed';
+    case 5:
+      return 'Failed';
+    case 6:
+      return 'Pending';
+    case 7:
+      return 'RetryPending';
+    default:
+      throw ArgumentError("Invalid value: $value");
+  }
+}
+
+String invoiceStatusFromEnum(InvoiceStatus status) {
+  switch (status) {
+    case InvoiceStatus.Draft:
+      return 'Draft';
+    case InvoiceStatus.Success:
+      return 'Success';
+    case InvoiceStatus.Sent:
+      return 'Sent';
+    case InvoiceStatus.PendingApproval:
+      return 'PendingApproval';
+    case InvoiceStatus.Completed:
+      return 'Completed';
+    case InvoiceStatus.Failed:
+      return 'Failed';
+    case InvoiceStatus.Pending:
+      return 'Pending';
+    case InvoiceStatus.RetryPending:
+      return 'RetryPending';
+    default:
+      throw ArgumentError("Invalid status: $status");
+  }
+}
+
+Color getStatusColor(int? status) {
   switch (status) {
     case 0:
-      return Colors.orange;
+      return Colors.grey;
     case 1:
-      return Colors.red;
+      return Colors.green;
     case 2:
       return Colors.green;
     case 3:
-      return Colors.white;
+      return Colors.yellow;
+    case 4:
+      return Colors.yellow;
+    case 5:
+      return Colors.red;
+    case 6:
+      return Colors.red;
+    case 7:
+      return Colors.green;
     default:
       return Colors.grey;
   }
@@ -50,6 +113,15 @@ enum VnpayInvoiceStatus {
 }
 
 extension VnpayInvoiceStatusExtension on VnpayInvoiceStatus {
+  static String get(String value) {
+    try {
+      VnpayInvoiceStatus status = fromString(value);
+      return status.description;
+    } catch (e) {
+      return 'Unknown status';
+    }
+  }
+
   String get description {
     switch (this) {
       case VnpayInvoiceStatus.origin:
@@ -117,7 +189,7 @@ enum VnpayStatus {
   canceled, // Đã hủy
 }
 
-extension StatusExtension on VnpayStatus {
+extension VnpayStatusExtension on VnpayStatus {
   String get description {
     switch (this) {
       case VnpayStatus.newStatus:
@@ -137,6 +209,25 @@ extension StatusExtension on VnpayStatus {
     }
   }
 
+  static VnpayStatus fromInt(int status) {
+    switch (status) {
+      case 0:
+        return VnpayStatus.newStatus;
+      case 1:
+        return VnpayStatus.released;
+      case 2:
+        return VnpayStatus.signed;
+      case 3:
+        return VnpayStatus.signError;
+      case 4:
+        return VnpayStatus.deleted;
+      case 5:
+        return VnpayStatus.canceled;
+      default:
+        throw Exception('Invalid Status value');
+    }
+  }
+
   static VnpayStatus fromString(String status) {
     switch (status) {
       case 'new':
@@ -145,7 +236,7 @@ extension StatusExtension on VnpayStatus {
         return VnpayStatus.released;
       case 'signed':
         return VnpayStatus.signed;
-      case 'sign_error':
+      case 'signError':
         return VnpayStatus.signError;
       case 'deleted':
         return VnpayStatus.deleted;
@@ -172,6 +263,15 @@ extension StatusExtension on VnpayStatus {
         return 'canceled';
       default:
         return '';
+    }
+  }
+
+  static String get(String value) {
+    try {
+      VnpayStatus status = fromString(value);
+      return status.description;
+    } catch (e) {
+      return 'Unknown status';
     }
   }
 }
@@ -231,6 +331,15 @@ extension TvanStatusExtension on TvanStatus {
         return TvanStatus.taxAuthorityReturnedResult;
       default:
         throw Exception('Invalid TvanStatus value');
+    }
+  }
+
+  static String get(int value) {
+    try {
+      TvanStatus status = fromValue(value);
+      return status.description;
+    } catch (e) {
+      return 'Unknown status';
     }
   }
 

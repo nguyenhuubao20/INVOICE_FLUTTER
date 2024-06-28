@@ -131,6 +131,26 @@ class InvoiceAPI {
     }
   }
 
+  Future<Invoice?> approvalInvoice(String invoiceId) async {
+    try {
+      var params = {
+        'status': 2,
+      };
+      final res = await request.patch('invoices/$invoiceId/update-status',
+          queryParameters: params);
+      if (res.statusCode == 200) {
+        Map<String, dynamic> json = res.data;
+        Invoice invoice = Invoice.fromJson(json);
+        return invoice;
+      } else {
+        throw Exception('Failed to update invoice detail: ${res.statusCode}');
+      }
+    } catch (e) {
+      print('Error during update invoice detail: $e');
+      return null;
+    }
+  }
+
   Future<InvoiceHistoryPartner?>? getInvoiceHistoryPartner(
       String invoiceId) async {
     var params = {

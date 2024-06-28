@@ -76,6 +76,7 @@ dependencies:
   ########################################
   timeline_list: ^0.0.6
   mrx_charts: ^0.1.3
+  flutter_settings_ui: ^3.0.1
 
 dev_dependencies:
   flutter_test:

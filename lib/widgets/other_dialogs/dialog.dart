@@ -1,6 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'package:get/get.dart';
 
 import '../../utils/theme.dart';
@@ -73,82 +74,87 @@ Future<bool> showAlertDialog(
   return result;
 }
 
-Future<bool> showConfirmDialog(
-    {String title = "Xác nhận",
-    String content = "Bạn có chắc chắn muốn thực hiện thao tác này?",
-    String confirmText = "Xác nhận",
-    String cancelText = "Hủy"}) async {
-  hideDialog();
-  bool result = false;
-  await Get.dialog(Dialog(
-    shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(8.0))),
-    child: Container(
-      width: Get.size.width * 0.5,
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Get.theme.colorScheme.background,
-        shape: BoxShape.rectangle,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Get.theme.colorScheme.shadow,
-            blurRadius: 10.0,
-            offset: Offset(0.0, 10.0),
-          ),
-        ],
+Future<bool> showConfirmDialog({
+  String title = "Xác nhận",
+  String content = "Bạn có chắc chắn muốn thực hiện thao tác này?",
+  String confirmText = "Xác nhận",
+  String cancelText = "Hủy",
+}) async {
+  Completer<bool> completer = Completer<bool>();
+  Get.dialog(
+    Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8.0)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Text(
-            title,
-            style: Get.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Text(
-              content,
-              style: Get.textTheme.bodyMedium,
+      child: Container(
+        width: Get.size.width * 0.5,
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Get.theme.colorScheme.background,
+          shape: BoxShape.rectangle,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Get.theme.colorScheme.shadow,
+              blurRadius: 10.0,
+              offset: Offset(0.0, 10.0),
             ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed: () {
-                  hideDialog();
-                },
-                child: Text(
-                  cancelText,
-                  style: Get.textTheme.titleMedium,
-                ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              title,
+              style: Get.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
-              ElevatedButton(
-                onPressed: () {
-                  hideDialog();
-                  result = true;
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ThemeColor.primary,
-                  textStyle: const TextStyle(
-                    color: Colors.white,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Text(
+                content,
+                style: Get.textTheme.bodyMedium,
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    Get.back();
+                    completer.complete(false); // Return false on cancel
+                  },
+                  child: Text(
+                    cancelText,
+                    style: Get.textTheme.titleMedium,
                   ),
                 ),
-                child: Text(confirmText,
-                    style: Get.textTheme.bodyMedium
-                        ?.copyWith(color: Colors.white)),
-              ),
-            ],
-          )
-        ],
+                ElevatedButton(
+                  onPressed: () {
+                    Get.back();
+                    completer.complete(true); // Return true on confirm
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ThemeColor.primary,
+                    textStyle: const TextStyle(color: Colors.white),
+                  ),
+                  child: Text(
+                    confirmText,
+                    style:
+                        Get.textTheme.bodyMedium?.copyWith(color: Colors.white),
+                  ),
+                ),
+              ],
+            )
+          ],
+        ),
       ),
     ),
-  ));
-  return result;
+  );
+  return completer.future;
 }
 
 showLoadingDialog() {

@@ -13,6 +13,7 @@ import 'package:invoice/utils/route_constrant.dart';
 import 'package:invoice/views/invoice/create_invoice.dart';
 import 'package:invoice/views/not_found_screen.dart';
 import 'package:invoice/views/root_screen.dart';
+import 'package:invoice/views/settings/setting.dart';
 import 'package:invoice/views/splash_screen.dart';
 import 'package:url_strategy/url_strategy.dart';
 
@@ -83,6 +84,10 @@ class MyApp extends StatelessWidget {
         GetPage(
             name: RouteHandler.INTRO,
             page: () => const SliderIntroduction(),
+            transition: Transition.cupertino),
+        GetPage(
+            name: RouteHandler.SETTINGS,
+            page: () => const Setting(),
             transition: Transition.cupertino),
         GetPage(
           name: RouteHandler.DASHBOARD,

@@ -5,6 +5,7 @@ import 'package:invoice/models/invoice.dart';
 import 'package:invoice/models/invoice_history_partner.dart';
 import 'package:invoice/view_models/account_view_model.dart';
 import 'package:invoice/view_models/base_view_model.dart';
+import 'package:invoice/widgets/other_dialogs/dialog.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../api/invoice_api.dart';
@@ -16,7 +17,7 @@ class InvoiceViewModel extends BaseViewModel {
   List<Invoice> _invoiceList = [];
   List<Invoice> get invoiceList => _invoiceList;
 
-  late InvoiceHistoryPartner? _invoiceHistoryPartner;
+  InvoiceHistoryPartner? _invoiceHistoryPartner = null;
   InvoiceHistoryPartner? get invoiceHistoryPartner => _invoiceHistoryPartner;
 
   List<InvoiceDetail>? invoiceDetail = [];
@@ -80,7 +81,7 @@ class InvoiceViewModel extends BaseViewModel {
         } else {
           _invoiceList.addAll(invoiceResponse.items!);
         }
-        _invoiceList.sort((a, b) => b.createdDate!.compareTo(a.createdDate!));
+        _invoiceList.sort((b, a) => a.createdDate!.compareTo(b.createdDate!));
         setState(ViewStatus.Completed);
         notifyListeners();
         return true;
@@ -104,15 +105,45 @@ class InvoiceViewModel extends BaseViewModel {
         notifyListeners();
       } else {
         setState(ViewStatus.Error, 'Invoice History Partner not found');
+        showAlertDialog(
+            title: 'Error',
+            content: 'Invoice History Partner is error',
+            confirmText: 'OK');
       }
     } catch (e) {
       setState(ViewStatus.Error, 'Failed to load Invoice History Partner');
+      showAlertDialog(
+          title: 'Error',
+          content: 'Invoice History Partner is error',
+          confirmText: 'OK');
+    }
+  }
+
+  Future<void> approvalInvoice(String invoiceId) async {
+    try {
+      setState(ViewStatus.Loading);
+      await Future.delayed(const Duration(seconds: 1));
+      await InvoiceAPI().approvalInvoice(invoiceId);
+      showAlertDialog(
+          title: 'Success',
+          content: 'Approval invoice successfully',
+          confirmText: 'OK');
+      setState(ViewStatus.Completed);
+    } catch (e) {
+      String errorDescription = 'Failed to load Invoice History Partner';
+      showAlertDialog(
+          title: 'Error', content: errorDescription, confirmText: 'OK');
+      setState(ViewStatus.Error, errorDescription);
     }
   }
 
   Invoice? getInvoiceDetailSync(String invoiceId) {
-    getInvoiceHistoryPartner(invoiceId);
-    return invoiceList.firstWhere((element) => element.id == invoiceId);
+    Invoice? invoice =
+        invoiceList.firstWhere((element) => element.id == invoiceId);
+    if (invoice != null && invoice.status != 5) {
+      getInvoiceHistoryPartner(invoiceId);
+    }
+    return invoice;
   }
 
   List<Invoice> getInvoiceByStatus(int status) {
@@ -121,5 +152,12 @@ class InvoiceViewModel extends BaseViewModel {
 
   List<Invoice> getInvoiceListByStoreIdSync(String? idStore) {
     return invoiceList.where((element) => element.storeId == idStore).toList();
+  }
+
+  List<Invoice> filterInvoicesByDate(DateTime selectedDate) {
+    String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
+    return _invoiceList
+        .where((invoice) => invoice.createdDate!.startsWith(formattedDate))
+        .toList();
   }
 }

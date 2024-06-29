@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
   final InvoiceViewModel _invoiceViewModel = Get.find<InvoiceViewModel>();
   final OrganizationViewModel _organizationViewModel =
       Get.find<OrganizationViewModel>();
-  String? selectedStore;
+  String? selectedStoreId;
   String? selectedStoreStr;
   DateTime? selectedDate;
   String? selectedDateStr;
@@ -70,8 +70,7 @@ class _HomePageState extends State<HomePage> {
     final now = tz.TZDateTime.now(vietnam);
     minDate = DateTime(now.year - 1, now.month, now.day);
     maxDate = DateTime(now.year + 1, now.month, now.day);
-    _invoiceViewModel.loadInvoice(
-        selectedDateStr, selectedStore, _selectedStatusIndex, selectedname);
+    _invoiceViewModel.loadInvoice();
   }
 
   @override
@@ -81,75 +80,15 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  void setInvoiceToDisplayed(String? storeId, DateTime? date) {
+  void setInvoiceToDisplayed() {
     setState(() {
-      selectedDate = date;
-      selectedDateStr =
-          date != null ? DateFormat("yyyy-MM-dd").format(date) : '';
-      _invoiceViewModel.loadInvoice(
-        selectedDateStr,
-        selectedStore,
-        _selectedStatusIndex,
-        selectedname,
-      );
+      _invoiceViewModel.loadInvoice();
     });
     refreshController.requestRefresh();
   }
 
-  void _onSearchChanged(String value) {
-    selectedname = value;
-
-    setInvoiceToDisplayed(selectedDateStr, selectedDate);
-  }
-
-  void _onStatusChanged(String? newStatus) {
-    switch (newStatus) {
-      case 'All':
-        _selectedStatusIndex = -1;
-        break;
-      case 'Draft':
-        _selectedStatusIndex = 0;
-        break;
-      case 'Success':
-        _selectedStatusIndex = 1;
-        break;
-      case 'Sent':
-        _selectedStatusIndex = 2;
-        break;
-      case 'Pending Approval':
-        _selectedStatusIndex = 3;
-        break;
-      case 'Completed':
-        _selectedStatusIndex = 4;
-        break;
-      case 'Failed':
-        _selectedStatusIndex = 5;
-        break;
-      case 'Pending':
-        _selectedStatusIndex = 6;
-        break;
-      case 'RetryPending':
-        _selectedStatusIndex = 7;
-        break;
-      default:
-        _selectedStatusIndex = -1;
-        break;
-    }
-    setState(() {
-      _invoiceViewModel.setSelectedStatus(newStatus);
-    });
-    setInvoiceToDisplayed(
-      selectedStore,
-      selectedDate,
-    );
-  }
-
   void _onRefresh() async {
     final result = await _invoiceViewModel.loadInvoice(
-      selectedDateStr,
-      selectedStore,
-      _selectedStatusIndex,
-      selectedname,
       isRefresh: true,
     );
     if (result) {
@@ -160,12 +99,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onLoading() async {
-    final result = await _invoiceViewModel.loadInvoice(
-      selectedDateStr,
-      selectedStore,
-      _selectedStatusIndex,
-      selectedname,
-    );
+    final result = await _invoiceViewModel.loadInvoice();
     if (result) {
       refreshController.loadComplete();
     } else {
@@ -268,14 +202,12 @@ class _HomePageState extends State<HomePage> {
                                             (selectedStore, selectedStoreStr) {
                                           setState(() {
                                             for (var s in storeList!) {
-                                              selectedStore = s.id!;
+                                              selectedStoreId = s.id!;
                                               selectedStoreStr = s.name!;
-                                              setInvoiceToDisplayed(
-                                                selectedStore,
-                                                selectedDate,
-                                              );
-                                              _invoiceViewModel.setStoreName(
+                                              _invoiceViewModel.setStore(
+                                                  selectedStoreId,
                                                   selectedStoreStr);
+                                              setInvoiceToDisplayed();
                                             }
                                           });
                                         },
@@ -303,10 +235,21 @@ class _HomePageState extends State<HomePage> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const Icon(
-                                Icons.arrow_drop_down,
-                                color: Colors.black,
-                              ),
+                              InkWell(
+                                onTap: () {
+                                  if (_invoiceViewModel.selectedStoreNameStr !=
+                                      null) {
+                                    _invoiceViewModel.resetStore();
+                                    setInvoiceToDisplayed();
+                                  }
+                                },
+                                child: Icon(
+                                  _invoiceViewModel.selectedStoreNameStr == null
+                                      ? Icons.arrow_drop_down
+                                      : Icons.close,
+                                  color: Colors.black,
+                                ),
+                              )
                             ],
                           ),
                         ),
@@ -329,19 +272,20 @@ class _HomePageState extends State<HomePage> {
                       ? DateTime.parse(_invoiceViewModel.selectedDateStr!)
                       : DateTime.now(),
                   onDateChange: (date) {
-                    String formattedDate =
-                        DateFormat('yyyy-MM-dd').format(date);
-                    _invoiceViewModel.setSelectedDate(formattedDate);
-                    setInvoiceToDisplayed(
-                        selectedStore, date ?? DateTime.now());
+                    _invoiceViewModel.setSelectedDate(date);
+                    setInvoiceToDisplayed();
                   },
                   showTopNavbar: true,
                   monthFormat: "MMMM yyyy",
                   showNavigationButtons: true,
                   weekStartFrom: WeekStartFrom.Monday,
                   borderRadius: BorderRadius.circular(10),
-                  activeBackgroundColor: ThemeColor.blue,
-                  activeTextColor: Colors.white,
+                  activeBackgroundColor: _invoiceViewModel.selectedDate != null
+                      ? ThemeColor.blue
+                      : ThemeColor.white,
+                  activeTextColor: _invoiceViewModel.selectedDate != null
+                      ? Colors.white
+                      : Colors.black,
                   inactiveBackgroundColor: Colors.white,
                   inactiveTextColor: Colors.black,
                   disabledTextColor: Colors.grey,
@@ -372,7 +316,8 @@ class _HomePageState extends State<HomePage> {
                             child: TextFormField(
                               controller: _searchController,
                               onFieldSubmitted: (value) {
-                                _onSearchChanged(value);
+                                _invoiceViewModel.setSearchedName(value);
+                                setInvoiceToDisplayed();
                               },
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
@@ -401,7 +346,9 @@ class _HomePageState extends State<HomePage> {
                                     iconSize: 24,
                                     isExpanded: true,
                                     onChanged: (String? newValue) {
-                                      _onStatusChanged(newValue);
+                                      _invoiceViewModel
+                                          .setSelectedStatus(newValue);
+                                      setInvoiceToDisplayed();
                                     },
                                     decoration: InputDecoration(
                                       labelText: 'Status',
@@ -485,14 +432,14 @@ class _HomePageState extends State<HomePage> {
 
 Widget _buildContent(InvoiceViewModel model, _HomePageState state) {
   if (model.status == ViewStatus.Error) {
-    return Center(
+    return const Center(
       child: Text(
         'Some error occurred! Please try again later.',
         style: TextStyle(color: Color(0xff549FFD)),
       ),
     );
   } else if (model.status == ViewStatus.Empty) {
-    return Center(
+    return const Center(
       child: Text(
         'Invoice is not available now! Please try again later.',
         style: TextStyle(color: Color(0xff549FFD)),

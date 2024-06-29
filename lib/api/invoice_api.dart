@@ -33,10 +33,7 @@ class InvoiceAPI {
   Future<InvoiceResponse?> getInvoicesByOrganizationAdmin(
       int currentPage, String? createDate, int? status, String? name) async {
     try {
-      if (status == -1 && name!.isEmpty) {
-        status = null;
-        name = null;
-      } else if (name != null && status == -1) {
+      if (status == -1) {
         status = null;
       }
 

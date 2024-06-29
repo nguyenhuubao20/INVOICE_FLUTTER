@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 
+import '../../view_models/theme_view_model.dart';
+
 class Setting extends StatelessWidget {
   const Setting({Key? key});
 
   @override
   Widget build(BuildContext context) {
+    final themeViewModel = ThemeViewModel();
     return Scaffold(
       appBar: AppBar(
         title: Text('Settings'),
@@ -15,6 +18,14 @@ class Setting extends StatelessWidget {
           SettingsSection(
             title: Text('Common'),
             tiles: [
+              SettingsTile.switchTile(
+                title: Text('Dark Mode'),
+                leading: Icon(Icons.dark_mode),
+                initialValue: themeViewModel.isDarkMode,
+                onToggle: (bool value) {
+                  themeViewModel.toggleDarkMode();
+                },
+              ),
               SettingsTile(
                 title: Text('Language'),
                 leading: Icon(Icons.language),

@@ -8,6 +8,8 @@ class ThemeColor {
   static Color yellow = Colors.yellow;
   static Color orange = Colors.orange;
   static Color pink = Colors.pink;
+  static Color white = Colors.white;
+  static Color black = Colors.black;
 }
 
 class AppTheme {

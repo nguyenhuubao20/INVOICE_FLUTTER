@@ -33,6 +33,7 @@ class _HomePageState extends State<HomePage> {
       RefreshController(initialRefresh: true);
   TextEditingController _searchController = TextEditingController();
   List<String> _statuses = [
+    'All',
     'Draft', // Bản nháp
     'Success', // Gửi thành công
     'Sent', // Đã gửi
@@ -51,8 +52,9 @@ class _HomePageState extends State<HomePage> {
   final OrganizationViewModel _organizationViewModel =
       Get.find<OrganizationViewModel>();
   String? selectedStore;
-  late DateTime selectedDate;
-  late String selectedDateStr;
+  String? selectedStoreStr;
+  DateTime? selectedDate;
+  String? selectedDateStr;
   late int? _selectedStatusIndex = -1;
   late String? _selectedStatus = null;
   late String selectedname = '';
@@ -68,8 +70,6 @@ class _HomePageState extends State<HomePage> {
     final now = tz.TZDateTime.now(vietnam);
     minDate = DateTime(now.year - 1, now.month, now.day);
     maxDate = DateTime(now.year + 1, now.month, now.day);
-    selectedDate = DateTime(now.year, now.month, now.day);
-    selectedDateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
     _invoiceViewModel.loadInvoice(
         selectedDateStr, selectedStore, _selectedStatusIndex, selectedname);
   }
@@ -81,22 +81,11 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  void setSelectedMenu(int index) {
-    setState(() {
-      selectedMenu = index;
-    });
-  }
-
-  void setFormattedDate(DateTime date) {
+  void setInvoiceToDisplayed(String? storeId, DateTime? date) {
     setState(() {
       selectedDate = date;
-    });
-  }
-
-  void setInvoiceToDisplayed(String? storeId, DateTime date) {
-    setState(() {
-      selectedDate = date;
-      selectedDateStr = DateFormat("yyyy-MM-dd").format(date);
+      selectedDateStr =
+          date != null ? DateFormat("yyyy-MM-dd").format(date) : '';
       _invoiceViewModel.loadInvoice(
         selectedDateStr,
         selectedStore,
@@ -146,11 +135,9 @@ class _HomePageState extends State<HomePage> {
         _selectedStatusIndex = -1;
         break;
     }
-
     setState(() {
-      _selectedStatus = newStatus;
+      _invoiceViewModel.setSelectedStatus(newStatus);
     });
-
     setInvoiceToDisplayed(
       selectedStore,
       selectedDate,
@@ -271,28 +258,29 @@ class _HomePageState extends State<HomePage> {
                                 builder: (context, child, model) {
                                   if (model.status == ViewStatus.Completed) {
                                     List<Store>? storeList = model.storeList;
-                                    if (storeList != null &&
-                                        storeList.isNotEmpty) {
-                                      return StoreListBottomSheet(
+                                    return SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.5,
+                                      child: StoreListBottomSheet(
                                         storeList: storeList,
-                                        onSelectStore: (selectedStore) {
+                                        onSelectStore:
+                                            (selectedStore, selectedStoreStr) {
                                           setState(() {
-                                            for (var s in storeList) {
+                                            for (var s in storeList!) {
                                               selectedStore = s.id!;
+                                              selectedStoreStr = s.name!;
                                               setInvoiceToDisplayed(
                                                 selectedStore,
                                                 selectedDate,
                                               );
+                                              _invoiceViewModel.setStoreName(
+                                                  selectedStoreStr);
                                             }
                                           });
                                         },
-                                      );
-                                    } else {
-                                      return const StoreListBottomSheet(
-                                        storeList: [],
-                                        onSelectStore: null,
-                                      );
-                                    }
+                                      ),
+                                    );
                                   }
                                   return Container();
                                 },
@@ -307,7 +295,8 @@ class _HomePageState extends State<HomePage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                selectedStore ?? 'Select Store',
+                                _invoiceViewModel.selectedStoreNameStr ??
+                                    'Select Store',
                                 style: const TextStyle(
                                   fontSize: 16.0,
                                   color: Colors.black,
@@ -336,9 +325,15 @@ class _HomePageState extends State<HomePage> {
                 child: HorizontalWeekCalendar(
                   minDate: minDate,
                   maxDate: maxDate,
-                  initialDate: selectedDate,
+                  initialDate: _invoiceViewModel.selectedDateStr != null
+                      ? DateTime.parse(_invoiceViewModel.selectedDateStr!)
+                      : DateTime.now(),
                   onDateChange: (date) {
-                    setInvoiceToDisplayed(selectedStore, date);
+                    String formattedDate =
+                        DateFormat('yyyy-MM-dd').format(date);
+                    _invoiceViewModel.setSelectedDate(formattedDate);
+                    setInvoiceToDisplayed(
+                        selectedStore, date ?? DateTime.now());
                   },
                   showTopNavbar: true,
                   monthFormat: "MMMM yyyy",
@@ -379,29 +374,29 @@ class _HomePageState extends State<HomePage> {
                               onFieldSubmitted: (value) {
                                 _onSearchChanged(value);
                               },
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 border: InputBorder.none,
                                 hintText: 'Search invoices',
                                 prefixIcon:
                                     Icon(Icons.search, color: Colors.black),
+                                contentPadding: EdgeInsets.symmetric(
+                                    vertical: 12.0, horizontal: 0.0),
                               ),
                             ),
                           ),
                           SizedBox(height: 10),
                           Container(
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16.0),
+                              borderRadius: BorderRadius.circular(12.0),
                             ),
                             width: MediaQuery.of(context).size.width * 0.3,
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Container(
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 8.0),
                                   child: DropdownButtonFormField<String>(
-                                    value: _selectedStatus,
-                                    hint: Text('Status'),
+                                    value: _invoiceViewModel.selectedStatusStr,
+                                    hint: Text(''),
                                     icon: Icon(Icons.filter_list),
                                     iconSize: 24,
                                     isExpanded: true,
@@ -410,23 +405,25 @@ class _HomePageState extends State<HomePage> {
                                     },
                                     decoration: InputDecoration(
                                       labelText: 'Status',
+                                      labelStyle:
+                                          TextStyle(color: ThemeColor.black),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(
+                                            color: ThemeColor.black, width: 1),
                                       ),
                                       enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color: Colors.blue, width: 1),
                                         borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(
+                                            color: ThemeColor.black, width: 1),
                                       ),
                                       focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color: Colors.blue, width: 2),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
+                                          borderSide: BorderSide(
+                                              color: ThemeColor.blue, width: 1),
+                                          borderRadius:
+                                              BorderRadius.circular(8.0)),
                                       filled: true,
-                                      fillColor: Colors.blue.shade50,
-                                      contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 8),
+                                      fillColor: ThemeColor.white,
                                     ),
                                     items: _statuses
                                         .map<DropdownMenuItem<String>>(
@@ -434,21 +431,14 @@ class _HomePageState extends State<HomePage> {
                                       return DropdownMenuItem<String>(
                                         value: value,
                                         child: Container(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(4),
-                                            color: _selectedStatus == value
-                                                ? Colors.blue.shade100
-                                                : Colors.transparent,
-                                          ),
                                           child: Text(
                                             value,
                                             style: TextStyle(
-                                              color: _selectedStatus == value
-                                                  ? Colors.blue.shade900
-                                                  : Colors.black,
+                                              color: _invoiceViewModel
+                                                          .selectedStatusStr ==
+                                                      value
+                                                  ? ThemeColor.blue
+                                                  : ThemeColor.black,
                                             ),
                                           ),
                                         ),
@@ -459,7 +449,6 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                           ),
-                          SizedBox(height: 20),
                         ],
                       ),
                     ),
@@ -467,14 +456,17 @@ class _HomePageState extends State<HomePage> {
                       model: _invoiceViewModel,
                       child: ScopedModelDescendant<InvoiceViewModel>(
                         builder: (context, child, model) {
-                          return SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.5,
-                            child: SmartRefresher(
-                              enablePullUp: true,
-                              onRefresh: _onRefresh,
-                              onLoading: _onLoading,
-                              controller: refreshController,
-                              child: _buildContent(model, this),
+                          return Container(
+                            margin: EdgeInsets.only(top: 5.0),
+                            child: SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.5,
+                              child: SmartRefresher(
+                                enablePullUp: true,
+                                onRefresh: _onRefresh,
+                                onLoading: _onLoading,
+                                controller: refreshController,
+                                child: _buildContent(model, this),
+                              ),
                             ),
                           );
                         },
@@ -492,11 +484,7 @@ class _HomePageState extends State<HomePage> {
 }
 
 Widget _buildContent(InvoiceViewModel model, _HomePageState state) {
-  if (model.status == ViewStatus.Loading) {
-    return Center(
-      child: CircularProgressIndicator(),
-    );
-  } else if (model.status == ViewStatus.Error) {
+  if (model.status == ViewStatus.Error) {
     return Center(
       child: Text(
         'Some error occurred! Please try again later.',
@@ -515,9 +503,6 @@ Widget _buildContent(InvoiceViewModel model, _HomePageState state) {
       itemCount: model.invoiceList.length,
       itemBuilder: (context, index) {
         var displayedInvoices = model.invoiceList[index];
-        String? shortenedCode = displayedInvoices.invoiceCode!.length > 10
-            ? '${displayedInvoices.invoiceCode?.substring(0, 10)}...'
-            : displayedInvoices.invoiceCode;
         return InkWell(
           child: Container(
             margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -541,20 +526,13 @@ Widget _buildContent(InvoiceViewModel model, _HomePageState state) {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '# $shortenedCode',
+                        '# ${displayedInvoices.invoiceCode}',
                         style: TextStyle(
                           fontSize: 16.0,
                           color: Colors.black,
                           fontWeight: FontWeight.bold,
                         ),
-                      ),
-                      Text(
-                        invoiceStatusFromString(displayedInvoices.status),
-                        style: TextStyle(
-                          fontSize: 16.0,
-                          color: getStatusColor(displayedInvoices.status),
-                          fontWeight: FontWeight.bold,
-                        ),
+                        overflow: TextOverflow.visible,
                       ),
                     ],
                   ),
@@ -564,12 +542,22 @@ Widget _buildContent(InvoiceViewModel model, _HomePageState state) {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildRowWithIcon(Icons.code_off,
-                              '${displayedInvoices.lookupCode}', Colors.grey),
+                          _buildRowWithIcon(
+                              Icons.code_off,
+                              '${displayedInvoices.lookupCode ?? ''}',
+                              Colors.grey),
                           _buildRowWithIcon(
                               Icons.payment,
                               '${displayedInvoices.paymentMethod}',
                               Colors.grey),
+                          Text(
+                            invoiceStatusFromString(displayedInvoices.status),
+                            style: TextStyle(
+                              fontSize: 17.0,
+                              color: getStatusColor(displayedInvoices.status),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                       Column(

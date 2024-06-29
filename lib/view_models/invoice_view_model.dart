@@ -22,6 +22,11 @@ class InvoiceViewModel extends BaseViewModel {
 
   List<InvoiceDetail>? invoiceDetail = [];
   List<String> invoiceStatus = [];
+
+  String? selectedStoreNameStr;
+  String? selectedStatusStr;
+  String? selectedDateStr;
+
   final AccountViewModel _accountViewModel = Get.find<AccountViewModel>();
   String? errorMessage;
   final RefreshController refreshController = RefreshController();
@@ -33,10 +38,21 @@ class InvoiceViewModel extends BaseViewModel {
     totalPage = t;
   }
 
+  void setStoreName(String? name) {
+    selectedStoreNameStr = name;
+  }
+
+  void setSelectedStatus(String? status) {
+    selectedStatusStr = status;
+  }
+
+  void setSelectedDate(String? date) {
+    selectedDateStr = date;
+  }
+
   Future<bool> loadInvoice(
-      String? createDate, String? storeId, int? status, String? name,
+      selectedDateStr, String? storeId, int? status, String? name,
       {bool isRefresh = false}) async {
-    createDate ??= DateFormat('yyyy-MM-dd').format(DateTime.now());
     try {
       if (isRefresh) {
         currentPage = 1;
@@ -46,12 +62,12 @@ class InvoiceViewModel extends BaseViewModel {
           return false;
         }
       }
-      await Future.delayed(const Duration(seconds: 5));
+      await Future.delayed(const Duration(seconds: 1));
       InvoiceResponse? invoiceResponse;
       if (storeId != null && storeId.isNotEmpty) {
         invoiceResponse = await InvoiceAPI()
             .getInvoiceListByStoreIdAndCreatedDateAndStatus(
-                currentPage, storeId, createDate, status, name);
+                currentPage, storeId, selectedDateStr, status, name);
       } else {
         switch (_accountViewModel.account!.role) {
           case 1:
@@ -60,11 +76,11 @@ class InvoiceViewModel extends BaseViewModel {
             break;
           case 2:
             invoiceResponse = await InvoiceAPI().getInvoicesByOrganizationAdmin(
-                currentPage, createDate, status, name);
+                currentPage, selectedDateStr, status, name);
             break;
           case 0:
-            invoiceResponse = await InvoiceAPI()
-                .getInvoicesByBrandAdmin(currentPage, createDate, status, name);
+            invoiceResponse = await InvoiceAPI().getInvoicesByBrandAdmin(
+                currentPage, selectedDateStr, status, name);
             break;
           default:
             throw Exception('Unknown role');
@@ -138,11 +154,13 @@ class InvoiceViewModel extends BaseViewModel {
   }
 
   Invoice? getInvoiceDetailSync(String invoiceId) {
+    /// FAILED VOI DRAFT THI TRA VE PARTNER
     Invoice? invoice =
         invoiceList.firstWhere((element) => element.id == invoiceId);
-    if (invoice != null && invoice.status != 5) {
+    if (invoice.status == 1) {
       getInvoiceHistoryPartner(invoiceId);
     }
+
     return invoice;
   }
 

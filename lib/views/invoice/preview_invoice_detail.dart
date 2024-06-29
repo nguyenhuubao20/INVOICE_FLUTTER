@@ -84,6 +84,14 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                           fit: BoxFit.fill,
                                         ),
                                         border: Border.all(color: Colors.black),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.5),
+                                            spreadRadius: 5,
+                                            blurRadius: 7,
+                                            offset: Offset(0, 3),
+                                          ),
+                                        ],
                                       ),
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
@@ -100,9 +108,28 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                     Text(
                                                       'Invoice',
                                                       style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 24),
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 32,
+                                                        color: Colors.blue,
+                                                        fontStyle:
+                                                            FontStyle.italic,
+                                                        decoration:
+                                                            TextDecoration
+                                                                .underline,
+                                                        decorationColor:
+                                                            Colors.white,
+                                                        decorationStyle:
+                                                            TextDecorationStyle
+                                                                .dashed,
+                                                        letterSpacing: 1.5,
+                                                        wordSpacing: 2.0,
+                                                        shadows: [
+                                                          Shadow(
+                                                            blurRadius: 3,
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
                                                   ],
                                                 ),
@@ -116,6 +143,8 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                       style: TextStyle(
                                                         fontWeight:
                                                             FontWeight.bold,
+                                                        overflow: TextOverflow
+                                                            .visible,
                                                       ),
                                                     ),
                                                     Row(
@@ -123,7 +152,7 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                         Container(
                                                           padding:
                                                               const EdgeInsets
-                                                                  .all(5),
+                                                                  .all(8),
                                                           decoration:
                                                               BoxDecoration(
                                                                   border: Border
@@ -158,8 +187,8 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                 buildRow('Lookup Code',
                                                     invoice!.lookupCode ?? ''),
                                                 invoiceStatusFromInt(
-                                                            invoice!.status) !=
-                                                        'Failed'
+                                                            invoice!.status) ==
+                                                        'Success'
                                                     ? Column(
                                                         children: [
                                                           buildRow(
@@ -206,9 +235,11 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                             MainAxisAlignment
                                                                 .spaceBetween,
                                                         children: [
-                                                          Text(
-                                                            'Error',
-                                                            style: const TextStyle(
+                                                          Flexible(
+                                                            child: Text(
+                                                              'Error',
+                                                              style:
+                                                                  const TextStyle(
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .bold,
@@ -217,18 +248,27 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                                         255,
                                                                         121,
                                                                         121,
-                                                                        121)),
+                                                                        121),
+                                                              ),
+                                                            ),
                                                           ),
-                                                          Text(
+                                                          Flexible(
+                                                            child: Text(
                                                               invoice!.responsePartNer
                                                                       ?.message ??
                                                                   '',
-                                                              style: const TextStyle(
-                                                                  color: Colors
-                                                                      .red,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold)),
+                                                              style:
+                                                                  const TextStyle(
+                                                                color:
+                                                                    Colors.red,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                              overflow: TextOverflow
+                                                                  .visible, // This will ensure text wraps to the next line
+                                                            ),
+                                                          ),
                                                         ],
                                                       ),
                                                 Row(

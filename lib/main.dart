@@ -10,6 +10,7 @@ import 'package:invoice/networking/firebase/firebase_notification.dart';
 import 'package:invoice/setup.dart';
 import 'package:invoice/utils/request.dart';
 import 'package:invoice/utils/route_constrant.dart';
+import 'package:invoice/view_models/theme_view_model.dart';
 import 'package:invoice/views/invoice/create_invoice.dart';
 import 'package:invoice/views/not_found_screen.dart';
 import 'package:invoice/views/root_screen.dart';
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final themeViewModel = ThemeViewModel();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -57,7 +59,7 @@ class MyApp extends StatelessWidget {
       color: Colors.white,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light,
+      themeMode: themeViewModel.isDarkMode ? ThemeMode.dark : ThemeMode.light,
       getPages: [
         GetPage(
             name: RouteHandler.WELCOME,

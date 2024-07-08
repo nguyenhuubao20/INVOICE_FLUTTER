@@ -41,7 +41,8 @@ class _HomePageState extends State<HomePage> {
     'Completed', // Hoàn tất
     'Failed', // Thất bại
     'Pending',
-    'RetryPending', // Đang chờ thử lại
+    'RetryPending',
+    'Replaced' // Đang chờ thử lại
   ];
   int selectedMenu = 0;
   List<Invoice>? displayedInvoices = [];
@@ -127,15 +128,23 @@ class _HomePageState extends State<HomePage> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications),
+            icon: Icon(Icons.refresh),
             color: Colors.white,
-            onPressed: () {},
+            onPressed: () {
+              _invoiceViewModel.removeAll();
+              setInvoiceToDisplayed();
+            },
           ),
+          // IconButton(
+          //   icon: Icon(Icons.notifications),
+          //   color: Colors.white,
+          //   onPressed: () {},
+          // ),
           IconButton(
             icon: Icon(Icons.logout),
             color: Colors.white,
             onPressed: () {
-              Get.find<AccountViewModel>().signOut();
+              _accountViewModel.signOut();
             },
           ),
         ],
@@ -260,40 +269,45 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SliverToBoxAdapter(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                ),
-                padding: const EdgeInsets.all(16.0),
-                child: HorizontalWeekCalendar(
-                  minDate: minDate,
-                  maxDate: maxDate,
-                  initialDate: _invoiceViewModel.selectedDateStr != null
-                      ? DateTime.parse(_invoiceViewModel.selectedDateStr!)
-                      : DateTime.now(),
-                  onDateChange: (date) {
-                    _invoiceViewModel.setSelectedDate(date);
-                    setInvoiceToDisplayed();
-                  },
-                  showTopNavbar: true,
-                  monthFormat: "MMMM yyyy",
-                  showNavigationButtons: true,
-                  weekStartFrom: WeekStartFrom.Monday,
-                  borderRadius: BorderRadius.circular(10),
-                  activeBackgroundColor: _invoiceViewModel.selectedDate != null
-                      ? ThemeColor.blue
-                      : ThemeColor.white,
-                  activeTextColor: _invoiceViewModel.selectedDate != null
-                      ? Colors.white
-                      : Colors.black,
-                  inactiveBackgroundColor: Colors.white,
-                  inactiveTextColor: Colors.black,
-                  disabledTextColor: Colors.grey,
-                  disabledBackgroundColor: Colors.grey.withOpacity(.3),
-                  activeNavigatorColor: Colors.black,
-                  inactiveNavigatorColor: Colors.black,
-                  monthColor: Colors.black,
-                ),
+              child: Column(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                    ),
+                    padding: const EdgeInsets.all(8.0),
+                    child: HorizontalWeekCalendar(
+                      minDate: minDate,
+                      maxDate: maxDate,
+                      initialDate: _invoiceViewModel.selectedDateStr != null
+                          ? DateTime.parse(_invoiceViewModel.selectedDateStr!)
+                          : DateTime.now(),
+                      onDateChange: (date) {
+                        _invoiceViewModel.setSelectedDate(date);
+                        setInvoiceToDisplayed();
+                      },
+                      showTopNavbar: true,
+                      monthFormat: "MMMM yyyy",
+                      showNavigationButtons: true,
+                      weekStartFrom: WeekStartFrom.Monday,
+                      borderRadius: BorderRadius.circular(10),
+                      activeBackgroundColor:
+                          _invoiceViewModel.selectedDate != null
+                              ? ThemeColor.blue
+                              : Colors.grey[100],
+                      activeTextColor: _invoiceViewModel.selectedDate != null
+                          ? Colors.white
+                          : Colors.black,
+                      inactiveBackgroundColor: Colors.grey[100],
+                      inactiveTextColor: Colors.black,
+                      disabledTextColor: Colors.grey,
+                      disabledBackgroundColor: Colors.grey.withOpacity(.3),
+                      activeNavigatorColor: Colors.black,
+                      inactiveNavigatorColor: Colors.black,
+                      monthColor: Colors.black,
+                    ),
+                  ),
+                ],
               ),
             ),
             SliverToBoxAdapter(
@@ -307,7 +321,9 @@ class _HomePageState extends State<HomePage> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Container(
-                            width: MediaQuery.of(context).size.width * 0.6,
+                            constraints: BoxConstraints(
+                                maxWidth:
+                                    MediaQuery.of(context).size.width * 0.6),
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               color: Colors.grey[200],
@@ -331,9 +347,6 @@ class _HomePageState extends State<HomePage> {
                           ),
                           SizedBox(height: 10),
                           Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12.0),
-                            ),
                             width: MediaQuery.of(context).size.width * 0.3,
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -345,6 +358,7 @@ class _HomePageState extends State<HomePage> {
                                     icon: Icon(Icons.filter_list),
                                     iconSize: 24,
                                     isExpanded: true,
+                                    isDense: true,
                                     onChanged: (String? newValue) {
                                       _invoiceViewModel
                                           .setSelectedStatus(newValue);
@@ -356,19 +370,14 @@ class _HomePageState extends State<HomePage> {
                                           TextStyle(color: ThemeColor.black),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(
-                                            color: ThemeColor.black, width: 1),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(
-                                            color: ThemeColor.black, width: 1),
                                       ),
                                       focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: ThemeColor.blue, width: 1),
-                                          borderRadius:
-                                              BorderRadius.circular(8.0)),
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                      ),
                                       filled: true,
                                       fillColor: ThemeColor.white,
                                     ),
@@ -399,6 +408,7 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                     ),
+                    SizedBox(height: 12),
                     ScopedModel<InvoiceViewModel>(
                       model: _invoiceViewModel,
                       child: ScopedModelDescendant<InvoiceViewModel>(
@@ -543,7 +553,6 @@ Widget _buildContent(InvoiceViewModel model, _HomePageState state) {
                             if (confirmed) {
                               model.approvalInvoice(
                                   model.invoiceList[index].id!);
-                              state.triggerRefresh();
                             } else {
                               // Người dùng đã hủy bỏ hành động
                             }

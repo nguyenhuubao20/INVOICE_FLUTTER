@@ -83,6 +83,13 @@ class StoreListBottomSheet extends StatelessWidget {
                                     fontSize: 14.0,
                                   ),
                                 ),
+                                Text(
+                                  'Store code: ${store.code ?? ''}',
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 14.0,
+                                  ),
+                                ),
                               ],
                             ),
                             trailing: Icon(

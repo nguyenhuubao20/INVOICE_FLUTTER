@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'dashboard_invoice.dart';
+import 'dashboard_invoices.dart';
 import 'dashboard_revenue.dart';
 
 class Dashboard extends StatefulWidget {
@@ -21,14 +21,14 @@ class _DashboardState extends State<Dashboard> {
           title: Text('Dashboard'),
           bottom: TabBar(
             tabs: [
-              Tab(text: 'Invoice'),
+              Tab(text: 'Invoices'),
               Tab(text: 'Revenue'),
             ],
           ),
         ),
         body: TabBarView(
           children: [
-            DashboardInvoice(),
+            DashboardInvoices(),
             DashboardRevenue(),
           ],
         ),

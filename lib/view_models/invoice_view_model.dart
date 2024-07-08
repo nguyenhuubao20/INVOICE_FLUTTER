@@ -71,6 +71,17 @@ class InvoiceViewModel extends BaseViewModel {
     notifyListeners();
   }
 
+  void removeAll() {
+    selectedDate = null;
+    selectedStoreNameStr = null;
+    selectedStatusStr = null;
+    selectedDateStr = null;
+    searchName = null;
+    selectedStoreId = null;
+    selectedStatusIndex = null;
+    notifyListeners();
+  }
+
   int convertStatusToInt(String? newStatus) {
     switch (newStatus) {
       case 'Draft':
@@ -89,6 +100,8 @@ class InvoiceViewModel extends BaseViewModel {
         return 6;
       case 'RetryPending':
         return 7;
+      case 'Replaced':
+        return 8;
       default:
         return -1;
     }
@@ -103,7 +116,6 @@ class InvoiceViewModel extends BaseViewModel {
 
   Future<bool> loadInvoice({bool isRefresh = false}) async {
     try {
-      // setState(ViewStatus.Loading);
       int selectedStatusIndex = convertStatusToInt(selectedStatusStr);
       String? selectedDateStr = convertDateTimeToString(selectedDate);
       if (isRefresh) {
@@ -115,7 +127,6 @@ class InvoiceViewModel extends BaseViewModel {
           return false;
         }
       }
-      // await Future.delayed(Duration(milliseconds: 100));
       InvoiceResponse? invoiceResponse;
       if (selectedStoreId != null) {
         invoiceResponse = await InvoiceAPI()
@@ -201,6 +212,7 @@ class InvoiceViewModel extends BaseViewModel {
           title: 'Success',
           content: 'Approval invoice successfully',
           confirmText: 'OK');
+      notifyListeners();
       setState(ViewStatus.Completed);
     } catch (e) {
       String errorDescription = 'Failed to load Invoice History Partner';
@@ -211,7 +223,6 @@ class InvoiceViewModel extends BaseViewModel {
   }
 
   Invoice? getInvoiceDetailSync(String invoiceId) {
-    /// FAILED VOI DRAFT THI TRA VE PARTNER
     Invoice? invoice =
         invoiceList.firstWhere((element) => element.id == invoiceId);
     if (invoice.status == 1) {

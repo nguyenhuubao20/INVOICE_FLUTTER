@@ -8,7 +8,8 @@ enum InvoiceStatus {
   Completed, // Hoàn tất
   Failed, // Thất bại
   Pending,
-  RetryPending, //Đang chờ thử lại
+  RetryPending,
+  Replaced, // Đang chờ thử lại
 }
 
 String invoiceStatusFromString(int? value) {
@@ -29,6 +30,8 @@ String invoiceStatusFromString(int? value) {
       return 'Pending';
     case 7:
       return 'RetryPending';
+    case 8:
+      return 'Replaced';
     default:
       throw ArgumentError("Invalid value: $value");
   }
@@ -52,6 +55,8 @@ String invoiceStatusFromInt(int? value) {
       return 'Pending';
     case 7:
       return 'RetryPending';
+    case 8:
+      return 'Replaced';
     default:
       throw ArgumentError("Invalid value: $value");
   }
@@ -75,6 +80,8 @@ String invoiceStatusFromEnum(InvoiceStatus status) {
       return 'Pending';
     case InvoiceStatus.RetryPending:
       return 'RetryPending';
+    case InvoiceStatus.Replaced:
+      return 'Replaced';
     default:
       throw ArgumentError("Invalid status: $status");
   }
@@ -89,15 +96,17 @@ Color getStatusColor(int? status) {
     case 2:
       return Colors.green;
     case 3:
-      return Colors.yellow;
+      return Colors.blue;
     case 4:
-      return Colors.yellow;
+      return Colors.green;
     case 5:
       return Colors.red;
     case 6:
-      return Colors.red;
+      return Colors.blue;
     case 7:
-      return Colors.green;
+      return Colors.blue;
+    case 8:
+      return Colors.orange;
     default:
       return Colors.grey;
   }

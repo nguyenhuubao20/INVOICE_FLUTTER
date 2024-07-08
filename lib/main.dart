@@ -11,7 +11,6 @@ import 'package:invoice/setup.dart';
 import 'package:invoice/utils/request.dart';
 import 'package:invoice/utils/route_constrant.dart';
 import 'package:invoice/view_models/theme_view_model.dart';
-import 'package:invoice/views/invoice/create_invoice.dart';
 import 'package:invoice/views/not_found_screen.dart';
 import 'package:invoice/views/root_screen.dart';
 import 'package:invoice/views/settings/setting.dart';
@@ -21,7 +20,6 @@ import 'package:url_strategy/url_strategy.dart';
 import 'networking/firebase/firebase_options.dart';
 import 'utils/theme.dart';
 import 'views/home_screen/invoice_detail.dart';
-import 'views/invoice/add_template.dart';
 import 'views/invoice/preview_invoice_detail.dart';
 import 'views/login/login.dart';
 import 'widgets/carousel_slider.dart';
@@ -70,10 +68,6 @@ class MyApp extends StatelessWidget {
             page: () => const LoginScreen(),
             transition: Transition.cupertino),
         GetPage(
-            name: RouteHandler.ADD_TEMPLATES,
-            page: () => const AddInvoiceTemplate(),
-            transition: Transition.cupertino),
-        GetPage(
             name: RouteHandler.INVOICE_DETAIL,
             page: () =>
                 InvoiceDetailPage(invoiceId: Get.parameters['id'] ?? '0'),
@@ -96,11 +90,6 @@ class MyApp extends StatelessWidget {
           page: () => RootScreen(
             idx: int.parse(Get.parameters['idx'] ?? '0'),
           ),
-          transition: Transition.cupertino,
-        ),
-        GetPage(
-          name: RouteHandler.CREATE_INVOICE,
-          page: () => const CreateInvoice(),
           transition: Transition.cupertino,
         ),
         GetPage(

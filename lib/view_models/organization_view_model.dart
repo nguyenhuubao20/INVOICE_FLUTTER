@@ -17,6 +17,7 @@ class OrganizationViewModel extends BaseViewModel {
   List<Store>? storeList = [];
   List<String>? storeNames = [];
   InvoiceReport? invoiceReports;
+  InvoicePaymentReport? invoicePaymentReport;
 
   Future<void> getStoreByOrganizationId() async {
     try {
@@ -25,7 +26,6 @@ class OrganizationViewModel extends BaseViewModel {
       if (_accountViewModel.account!.role == 2) {
         storeList = await OrganizationAPI().getStoreByOrganizationId();
         getStoreNames();
-        await getNumberInvoicesStatus(DateTime.now());
         if (storeList != null) {
           setState(ViewStatus.Completed);
           notifyListeners();
@@ -41,16 +41,48 @@ class OrganizationViewModel extends BaseViewModel {
     }
   }
 
-  Future<void> getNumberInvoicesStatus(DateTime date,
-      {String errorMessage = 'Failed to load invoice list',
+  Future<void> getInvoiceReportByOrganization(
+      {DateTime? fromDate,
+      DateTime? toDate,
+      String errorMessage = 'Failed to load invoice list',
       Duration delay = const Duration(seconds: 1)}) async {
     try {
       setState(ViewStatus.Loading);
       await Future.delayed(delay);
 
       if (_accountViewModel.account?.role == 2) {
-        invoiceReports = await OrganizationAPI().getNumberInvoicesStatus(date);
+        invoiceReports = await OrganizationAPI()
+            .getInvoiceReportByOrganization(fromDate, toDate);
         if (invoiceReports != null) {
+          setState(ViewStatus.Completed);
+          notifyListeners();
+        } else {
+          setState(ViewStatus.Error, 'Invoice list not found');
+        }
+      } else {
+        showAlertDialog(
+          title: 'Error',
+          content: 'You have no access to load this data',
+        );
+      }
+    } catch (e, stackTrace) {
+      log('Error loading invoice report: $e', stackTrace: stackTrace);
+      setState(ViewStatus.Error, errorMessage);
+    }
+  }
+
+  Future<void> getInvoicePaymentReportByOrganization(
+      {DateTime? fromDate,
+      DateTime? toDate,
+      String errorMessage = 'Failed to load payment report',
+      Duration delay = const Duration(seconds: 1)}) async {
+    try {
+      setState(ViewStatus.Loading);
+      await Future.delayed(delay);
+      if (_accountViewModel.account?.role == 2) {
+        invoicePaymentReport = await OrganizationAPI()
+            .getInvoiceReportPaymentByOrganization(fromDate, toDate);
+        if (invoicePaymentReport != null) {
           setState(ViewStatus.Completed);
           notifyListeners();
         } else {

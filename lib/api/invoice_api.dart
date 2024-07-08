@@ -62,11 +62,17 @@ class InvoiceAPI {
   }
 
   Future<InvoiceResponse?> getInvoicesByBrandAdmin(
-      int currentPage, String? createdDate, int? status, String? name) async {
+      int currentPage, String? createDate, int? status, String? name) async {
     try {
+      if (status == -1) {
+        status = null;
+      }
       final brandId = await getBrandId();
       var params = {
         'id': brandId,
+        'createdDate': createDate,
+        'status': status,
+        'name': name,
         'page': currentPage,
         'size': size,
       };
@@ -91,9 +97,12 @@ class InvoiceAPI {
     String? name,
   ) async {
     try {
+      if (status == -1) {
+        status = null;
+      }
       var params = {
         'id': storeId,
-        'createdDate': createDate,
+        'date': createDate,
         'status': status,
         'name': name,
         'page': currentPage,

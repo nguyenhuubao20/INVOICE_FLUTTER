@@ -237,7 +237,11 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                         children: [
                                                           Flexible(
                                                             child: Text(
-                                                              'Error',
+                                                              invoice!.responsePartNer
+                                                                          ?.message !=
+                                                                      null
+                                                                  ? 'Error'
+                                                                  : '',
                                                               style:
                                                                   const TextStyle(
                                                                 fontWeight:

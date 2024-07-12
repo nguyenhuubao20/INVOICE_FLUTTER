@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:invoice/enums/view_status.dart';
 import 'package:invoice/models/invoice_history_partner.dart';
 import 'package:invoice/view_models/invoice_view_model.dart';
 import 'package:scoped_model/scoped_model.dart';
 
+import '../../enums/date_format.dart';
 import '../../enums/invoice_status.dart';
 import '../../models/invoice.dart';
 
@@ -61,7 +61,7 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                               if (model.msg != null && model.msg!.isEmpty) {
                                 return model.msg!;
                               } else {
-                                return 'Error loading invoice detail';
+                                return 'Lỗi tải chi tiết hóa đơn';
                               }
                             }(),
                           ),
@@ -106,7 +106,7 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                           .spaceBetween,
                                                   children: [
                                                     Text(
-                                                      'Invoice',
+                                                      'Hóa đơn',
                                                       style: TextStyle(
                                                         fontWeight:
                                                             FontWeight.bold,
@@ -186,9 +186,11 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                 const SizedBox(height: 10),
                                                 buildRow('Lookup Code',
                                                     invoice!.lookupCode ?? ''),
-                                                invoiceStatusFromInt(
-                                                            invoice!.status) ==
-                                                        'Success'
+                                                invoiceStatusFromInt(invoice!
+                                                                .status) ==
+                                                            'Thành Công' &&
+                                                        model.invoiceHistoryPartner !=
+                                                            null
                                                     ? Column(
                                                         children: [
                                                           buildRow(
@@ -240,19 +242,15 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                               invoice!.responsePartNer
                                                                           ?.message !=
                                                                       null
-                                                                  ? 'Error'
+                                                                  ? 'Lỗi'
                                                                   : '',
                                                               style:
                                                                   const TextStyle(
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .bold,
-                                                                color: Color
-                                                                    .fromARGB(
-                                                                        255,
-                                                                        121,
-                                                                        121,
-                                                                        121),
+                                                                color: Colors
+                                                                    .black,
                                                               ),
                                                             ),
                                                           ),
@@ -275,39 +273,13 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                           ),
                                                         ],
                                                       ),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    const Text(
-                                                      'Created date',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Color.fromARGB(
-                                                              255,
-                                                              121,
-                                                              121,
-                                                              121)),
-                                                    ),
-                                                    Text(
-                                                      DateFormat('d MMMM').format(
-                                                          DateTime.parse(invoice!
-                                                                  .createdDate ??
-                                                              '')),
-                                                      style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
+                                                buildRow('Ngày tạo',
+                                                    '${DateFormatVN.formatDate(invoice?.createdDate ?? '')}'),
                                               ],
                                             ),
                                             const SizedBox(height: 10),
                                             const Text(
-                                              'Information of Buyer',
+                                              'Thông tin người mua',
                                               style: TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 15,
@@ -315,12 +287,12 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                             ),
                                             const SizedBox(height: 10),
                                             buildRow(
-                                                'Buyer Name',
+                                                'Tên người mua',
                                                 invoice?.invoiceDetail
                                                         ?.buyerFullName ??
                                                     ''),
                                             buildRow(
-                                                'Address',
+                                                'Địa chỉ',
                                                 invoice?.invoiceDetail
                                                         ?.buyerAddress ??
                                                     ''),
@@ -330,22 +302,25 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                         ?.buyerEmail ??
                                                     ''),
                                             buildRow(
-                                                'Phone',
+                                                'Điện thoại',
                                                 invoice?.invoiceDetail
                                                         ?.buyerPhoneNumber ??
                                                     ''),
                                             buildRow(
-                                                'Bank',
+                                                'Ngân hàng',
                                                 invoice?.invoiceDetail
                                                         ?.buyerBankName ??
                                                     ''),
                                             const SizedBox(height: 20),
                                             const Text(
-                                              'Items',
+                                              'Mặt hàng',
                                               style: TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 15,
                                               ),
+                                            ),
+                                            SizedBox(
+                                              width: 20,
                                             ),
                                             Table(
                                               border: TableBorder.all(
@@ -369,7 +344,7 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                     ),
                                                     TableCell(
                                                       child: Center(
-                                                        child: Text('Product',
+                                                        child: Text('Sản phẩm',
                                                             style: TextStyle(
                                                                 color: Colors
                                                                     .white)),
@@ -377,7 +352,7 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                     ),
                                                     TableCell(
                                                       child: Center(
-                                                        child: Text('Quantity',
+                                                        child: Text('Số lượng',
                                                             style: TextStyle(
                                                                 color: Colors
                                                                     .white)),
@@ -385,7 +360,7 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                     ),
                                                     TableCell(
                                                       child: Center(
-                                                        child: Text('Price',
+                                                        child: Text('Giá',
                                                             style: TextStyle(
                                                                 color: Colors
                                                                     .white)),
@@ -393,7 +368,7 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                     ),
                                                     TableCell(
                                                       child: Center(
-                                                        child: Text('Total',
+                                                        child: Text('Tổng cộng',
                                                             style: TextStyle(
                                                                 color: Colors
                                                                     .white)),
@@ -475,7 +450,7 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                                 .spaceBetween,
                                                         children: [
                                                           const Text(
-                                                            'Total Without Tax',
+                                                            'Tổng không có thuế',
                                                             style: TextStyle(
                                                               fontWeight:
                                                                   FontWeight
@@ -505,7 +480,7 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                                 .spaceBetween,
                                                         children: [
                                                           const Text(
-                                                            'Tax',
+                                                            'Thuế',
                                                             style: TextStyle(
                                                               fontWeight:
                                                                   FontWeight
@@ -535,7 +510,7 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                                 .spaceBetween,
                                                         children: [
                                                           const Text(
-                                                            'Total',
+                                                            'Tổng cộng',
                                                             style: TextStyle(
                                                               fontWeight:
                                                                   FontWeight
@@ -571,7 +546,7 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      '123 Main St, Hanoi',
+                                                      '123 Hà Nội',
                                                       style: TextStyle(
                                                           color: Colors.black,
                                                           fontWeight:
@@ -585,7 +560,7 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                               FontWeight.bold),
                                                     ),
                                                     Text(
-                                                      'Customer@example.com',
+                                                      'taolachu@email.com',
                                                       style: TextStyle(
                                                           color: Colors.black,
                                                           fontWeight:
@@ -617,14 +592,13 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
       children: [
         Text(
           title,
-          style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Color.fromARGB(255, 121, 121, 121)),
+          style:
+              const TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
         Text(
           data,
           style: const TextStyle(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.normal,
           ),
         ),
       ],

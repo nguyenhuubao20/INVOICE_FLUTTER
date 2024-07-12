@@ -2,21 +2,24 @@ import 'dart:developer';
 
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:invoice/enums/date_format.dart';
 import 'package:invoice/models/invoice.dart';
 import 'package:invoice/view_models/account_view_model.dart';
 
-import '../api/organization_api.dart';
-import '../enums/view_status.dart';
-import '../widgets/other_dialogs/dialog.dart';
-import 'base_view_model.dart';
+import '../../api/organization_api.dart';
+import '../../enums/view_status.dart';
+import '../../widgets/other_dialogs/dialog.dart';
+import '../base_view_model.dart';
 
-class DashboardViewModel extends BaseViewModel {
+class DashboardInvoiceViewModel extends BaseViewModel {
   final AccountViewModel _accountViewModel = Get.find<AccountViewModel>();
-  InvoiceReport? invoiceReports;
   InvoiceReport? invoicetTotalReports;
 
-  String? selectedStatus = 'draft';
-  int requestDays = 1;
+  double maxInvoices = 0;
+  double minInvoices = 0;
+
+  String selectedKey = 'Tuần này';
+  int requestDays = 7;
   List<String> dateData = [];
   List<String> data = [];
   Map<String?, InvoiceReport?> chartData = {};
@@ -25,12 +28,18 @@ class DashboardViewModel extends BaseViewModel {
     this.requestDays = requestDays;
     chartData.clear();
     getLastRequestDays();
-    getInvoiceReportByOrganizationDashBoard();
+    getInvoiceReporPaymenttByOrganizationDashBoard();
     notifyListeners();
   }
 
-  void setSelectedStatus(String status) {
-    selectedStatus = status;
+  void setSelectedKey(String key) {
+    selectedKey = key;
+    notifyListeners();
+  }
+
+  void setMinMaxInvoices(double min, double max) {
+    minInvoices = min;
+    maxInvoices = max;
     notifyListeners();
   }
 
@@ -52,7 +61,7 @@ class DashboardViewModel extends BaseViewModel {
     return dateData;
   }
 
-  Future<void> getInvoiceReportByOrganizationDashBoard() async {
+  Future<void> getInvoiceReporPaymenttByOrganizationDashBoard() async {
     try {
       setState(ViewStatus.Loading);
       await Future.delayed(const Duration(seconds: 1));
@@ -79,8 +88,7 @@ class DashboardViewModel extends BaseViewModel {
             await OrganizationAPI().getInvoiceReportByOrganization(date, date);
         if (invoiceReports != null) {
           addInvoiceReportData(invoiceReports);
-          final dateFormat =
-              DateFormat('d MMMM').format(DateTime.parse(dateString!));
+          final dateFormat = DateFormatVN.formatDateDDMM("${dateString}");
           chartData[dateFormat] = invoiceReports;
         }
       }
@@ -88,6 +96,7 @@ class DashboardViewModel extends BaseViewModel {
       if (data.isNotEmpty) {
         this.data = data;
         notifyListeners();
+
         setState(ViewStatus.Completed);
       } else {
         setState(ViewStatus.Error, 'Invoice list not found');
@@ -98,35 +107,7 @@ class DashboardViewModel extends BaseViewModel {
   }
 
   void addInvoiceReportData(InvoiceReport invoiceReports) {
-    switch (selectedStatus) {
-      case 'draft':
-        data.add(invoiceReports.draft.toString());
-        break;
-      case 'success':
-        data.add(invoiceReports.success.toString());
-        break;
-      case 'sent':
-        data.add(invoiceReports.sent.toString());
-        break;
-      case 'pendingApproval':
-        data.add(invoiceReports.pendingApproval.toString());
-        break;
-      case 'completed':
-        data.add(invoiceReports.completed.toString());
-        break;
-      case 'failed':
-        data.add(invoiceReports.failed.toString());
-        break;
-      case 'pending':
-        data.add(invoiceReports.pending.toString());
-        break;
-      case 'retryPending':
-        data.add(invoiceReports.retryPending.toString());
-        break;
-      default:
-        data.add(invoiceReports.replaced.toString());
-        break;
-    }
+    data.add(invoiceReports.totalInvoiceReportInDate.toString());
   }
 
   Future<void> getInvoiceReportByOrganization(
@@ -142,8 +123,10 @@ class DashboardViewModel extends BaseViewModel {
         invoicetTotalReports = await OrganizationAPI()
             .getInvoiceReportByOrganization(fromDate, toDate);
         if (invoicetTotalReports != null) {
-          setState(ViewStatus.Completed);
+          setMinMaxInvoices(getMinTotalInvoicesInDate().toDouble(),
+              getMaxTotalInvoicesInDate().toDouble());
           notifyListeners();
+          setState(ViewStatus.Completed);
         } else {
           setState(ViewStatus.Error, 'Invoice list not found');
         }
@@ -157,5 +140,31 @@ class DashboardViewModel extends BaseViewModel {
       log('Error loading invoice report: $e', stackTrace: stackTrace);
       setState(ViewStatus.Error, errorMessage);
     }
+  }
+
+  int getMaxTotalInvoicesInDate() {
+    int max = 0;
+    for (var entry in chartData.entries) {
+      if (entry.value != null) {
+        int totalAmount = entry.value!.totalInvoiceReportInDate ?? 0;
+        if (totalAmount > max) {
+          max = totalAmount;
+        }
+      }
+    }
+    return max;
+  }
+
+  int getMinTotalInvoicesInDate() {
+    int min = 0;
+    for (var entry in chartData.entries) {
+      if (entry.value != null) {
+        int totalAmount = entry.value!.totalInvoiceReportInDate ?? 0;
+        if (totalAmount < min) {
+          min = totalAmount;
+        }
+      }
+    }
+    return min;
   }
 }

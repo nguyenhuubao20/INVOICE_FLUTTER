@@ -1,5 +1,18 @@
 import 'package:flutter/material.dart';
 
+List<String> InvoiceStatusListString = [
+  'Tất cả', // All
+  'Bản nháp', // Draft
+  'Thành công', // Success
+  'Đã gửi', // Sent
+  'Đang chờ phê duyệt', // Pending Approval
+  'Hoàn tất', // Completed
+  'Thất bại', // Failed
+  'Đang chờ', // Pending
+  'Đang chờ thử lại', // RetryPending
+  'Thay thế' // Replaced
+];
+
 enum InvoiceStatus {
   Draft, // Bản nháp
   Success, // Gửi thành công
@@ -12,53 +25,53 @@ enum InvoiceStatus {
   Replaced, // Đang chờ thử lại
 }
 
-String invoiceStatusFromString(int? value) {
+int invoiceStatusFromString(String? value) {
   switch (value) {
-    case 0:
-      return 'Draft';
-    case 1:
-      return 'Success';
-    case 2:
-      return 'Sent';
-    case 3:
-      return 'PendingApproval';
-    case 4:
-      return 'Completed';
-    case 5:
-      return 'Failed';
-    case 6:
-      return 'Pending';
-    case 7:
-      return 'RetryPending';
-    case 8:
-      return 'Replaced';
+    case 'Bản nháp':
+      return 0;
+    case 'Thành công':
+      return 1;
+    case 'Đã gửi':
+      return 2;
+    case 'Đang chờ phê duyệt':
+      return 3;
+    case 'Hoàn tất':
+      return 4;
+    case 'Thất bại':
+      return 5;
+    case 'Đang chờ':
+      return 6;
+    case 'Đang chờ thử lại':
+      return 7;
+    case 'Thay thế':
+      return 8;
     default:
-      throw ArgumentError("Invalid value: $value");
+      return -1;
   }
 }
 
 String invoiceStatusFromInt(int? value) {
   switch (value) {
     case 0:
-      return 'Draft';
+      return 'Bản nháp';
     case 1:
-      return 'Success';
+      return 'Thành công';
     case 2:
-      return 'Sent';
+      return 'Đã gửi';
     case 3:
-      return 'PendingApproval';
+      return 'Đang chờ phê duyệt';
     case 4:
-      return 'Completed';
+      return 'Hoàn tất';
     case 5:
-      return 'Failed';
+      return 'Thất bại';
     case 6:
-      return 'Pending';
+      return 'Đang chờ';
     case 7:
-      return 'RetryPending';
+      return 'Đang chờ thử lại';
     case 8:
-      return 'Replaced';
+      return 'Thay thế';
     default:
-      throw ArgumentError("Invalid value: $value");
+      throw ArgumentError("Giá trị không hợp lệ: $value");
   }
 }
 

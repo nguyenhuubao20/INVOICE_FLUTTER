@@ -18,11 +18,11 @@ class _DashboardState extends State<Dashboard> {
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          title: Text('Dashboard'),
+          title: Text('Thống Kê'),
           bottom: TabBar(
             tabs: [
-              Tab(text: 'Invoices'),
-              Tab(text: 'Revenue'),
+              Tab(text: 'Số lượng hóa đơn'),
+              Tab(text: 'Số tiền giao dịch'),
             ],
           ),
         ),

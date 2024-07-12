@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:horizontal_week_calendar/horizontal_week_calendar.dart';
-import 'package:intl/intl.dart';
+import 'package:invoice/enums/date_format.dart';
 import 'package:invoice/enums/view_status.dart';
 import 'package:invoice/models/account.dart';
 import 'package:invoice/models/invoice.dart';
@@ -11,7 +11,6 @@ import 'package:invoice/view_models/invoice_view_model.dart';
 import 'package:invoice/view_models/organization_view_model.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:scoped_model/scoped_model.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -32,18 +31,7 @@ class _HomePageState extends State<HomePage> {
   final RefreshController refreshController =
       RefreshController(initialRefresh: true);
   TextEditingController _searchController = TextEditingController();
-  List<String> _statuses = [
-    'All',
-    'Draft', // Bản nháp
-    'Success', // Gửi thành công
-    'Sent', // Đã gửi
-    'Pending Approval', // Đang chờ phê duyệt
-    'Completed', // Hoàn tất
-    'Failed', // Thất bại
-    'Pending',
-    'RetryPending',
-    'Replaced' // Đang chờ thử lại
-  ];
+
   int selectedMenu = 0;
   List<Invoice>? displayedInvoices = [];
   late InvoiceReport? invoiceReports;
@@ -174,7 +162,7 @@ class _HomePageState extends State<HomePage> {
                           Icon(Icons.store, color: Color(0xff549FFD)),
                           const SizedBox(width: 8.0),
                           Text(
-                            'Store',
+                            'Cửa hàng',
                             style: TextStyle(
                               fontSize: 16.0,
                               color: Colors.grey[600],
@@ -237,7 +225,7 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               Text(
                                 _invoiceViewModel.selectedStoreNameStr ??
-                                    'Select Store',
+                                    'Chọn cửa hàng',
                                 style: const TextStyle(
                                   fontSize: 16.0,
                                   color: Colors.black,
@@ -337,7 +325,7 @@ class _HomePageState extends State<HomePage> {
                               },
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
-                                hintText: 'Search invoices',
+                                hintText: 'Tìm kiếm hóa đơn',
                                 prefixIcon:
                                     Icon(Icons.search, color: Colors.black),
                                 contentPadding: EdgeInsets.symmetric(
@@ -365,7 +353,7 @@ class _HomePageState extends State<HomePage> {
                                       setInvoiceToDisplayed();
                                     },
                                     decoration: InputDecoration(
-                                      labelText: 'Status',
+                                      labelText: 'Trạng thái',
                                       labelStyle:
                                           TextStyle(color: ThemeColor.black),
                                       border: OutlineInputBorder(
@@ -381,9 +369,9 @@ class _HomePageState extends State<HomePage> {
                                       filled: true,
                                       fillColor: ThemeColor.white,
                                     ),
-                                    items: _statuses
-                                        .map<DropdownMenuItem<String>>(
-                                            (String value) {
+                                    items: InvoiceStatusListString.map<
+                                            DropdownMenuItem<String>>(
+                                        (String value) {
                                       return DropdownMenuItem<String>(
                                         value: value,
                                         child: Container(
@@ -444,14 +432,14 @@ Widget _buildContent(InvoiceViewModel model, _HomePageState state) {
   if (model.status == ViewStatus.Error) {
     return const Center(
       child: Text(
-        'Some error occurred! Please try again later.',
+        'Đã xảy ra lỗi! Vui lòng thử lại sau.',
         style: TextStyle(color: Color(0xff549FFD)),
       ),
     );
   } else if (model.status == ViewStatus.Empty) {
     return const Center(
       child: Text(
-        'Invoice is not available now! Please try again later.',
+        'Hiện không có hóa đơn! Vui lòng thử lại sau.',
         style: TextStyle(color: Color(0xff549FFD)),
       ),
     );
@@ -482,14 +470,39 @@ Widget _buildContent(InvoiceViewModel model, _HomePageState state) {
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        '# ${displayedInvoices.invoiceCode}',
-                        style: TextStyle(
-                          fontSize: 16.0,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Text(
+                          '# ${displayedInvoices.invoiceCode}',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        overflow: TextOverflow.visible,
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.info_outline, size: 20),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text('Mã hóa đơn'),
+                                content: SelectableText(
+                                    displayedInvoices.invoiceCode.toString()),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: Text('Đóng'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -508,7 +521,7 @@ Widget _buildContent(InvoiceViewModel model, _HomePageState state) {
                               '${displayedInvoices.paymentMethod}',
                               Colors.grey),
                           Text(
-                            invoiceStatusFromString(displayedInvoices.status),
+                            invoiceStatusFromInt(displayedInvoices.status),
                             style: TextStyle(
                               fontSize: 17.0,
                               color: getStatusColor(displayedInvoices.status),
@@ -522,15 +535,15 @@ Widget _buildContent(InvoiceViewModel model, _HomePageState state) {
                         children: [
                           _buildRowWithIcon(
                               Icons.access_time,
-                              '${timeago.format(DateTime.parse(displayedInvoices.createdDate!))}',
+                              '${DateFormatVN.formatTime(displayedInvoices.createdDate!)}',
                               Colors.grey),
                           _buildRowWithIcon(
                               Icons.calendar_month,
-                              '${DateFormat('d MMMM').format(DateTime.parse(displayedInvoices.createdDate!))}',
+                              '${DateFormatVN.formatDate(displayedInvoices.createdDate!)}',
                               Colors.grey),
                           _buildRowWithIcon(
                               null,
-                              'Total: ${displayedInvoices.totalAmount}',
+                              'Tổng: ${displayedInvoices.totalAmount}',
                               Colors.black),
                         ],
                       ),
@@ -546,19 +559,18 @@ Widget _buildContent(InvoiceViewModel model, _HomePageState state) {
                         child: ElevatedButton(
                           onPressed: () async {
                             bool confirmed = await showConfirmDialog(
-                              title: 'Approval Invoice',
-                              content: 'Do you want to approve this invoice?',
-                              confirmText: 'Yes',
+                              title: 'Hóa đơn phê duyệt',
+                              content:
+                                  'Bạn có muốn phê duyệt hóa đơn này không?',
+                              confirmText: 'Có',
                             );
                             if (confirmed) {
                               model.approvalInvoice(
                                   model.invoiceList[index].id!);
-                            } else {
-                              // Người dùng đã hủy bỏ hành động
-                            }
+                            } else {}
                           },
                           child: Text(
-                            'Waiting for approval',
+                            'Chờ phê duyệt',
                             style: TextStyle(color: Colors.white),
                           ),
                           style: ButtonStyle(
@@ -588,9 +600,9 @@ Widget buildGreeting(AccountViewModel _accountViewModel) {
   String greeting = getGreeting();
 
   // Chọn biểu tượng dựa vào lời chào
-  if (greeting == 'Good morning ') {
+  if (greeting == 'Chào buổi sáng ') {
     assetPath = 'assets/images/afternoon.png';
-  } else if (greeting == 'Good afternoon ') {
+  } else if (greeting == 'Chào buổi chiều ') {
     assetPath = 'assets/images/afternoon.png';
   } else {
     assetPath = 'assets/images/night.png';
@@ -634,18 +646,18 @@ String getGreeting() {
   var hour = now.hour;
 
   if (hour < 12) {
-    return 'Good morning ';
+    return 'Chào buổi sáng ';
   } else if (hour < 18) {
-    return 'Good afternoon ';
+    return 'Chào buổi chiều ';
   } else {
-    return 'Good evening ';
+    return 'Buổi tối vui vẻ ';
   }
 }
 
 Widget _buildRowWithIcon(IconData? icon, String text, Color textColor) {
   return Row(
     children: [
-      if (icon != null) Icon(icon, color: textColor, size: 16.0),
+      if (icon != null) Icon(icon, color: textColor, size: 12.0),
       if (icon != null) SizedBox(width: 8.0),
       Text(
         text,

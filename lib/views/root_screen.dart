@@ -23,10 +23,10 @@ class _RootScreenState extends State<RootScreen> {
   ];
 
   List<BottomNavigationBarItem> items = const [
-    BottomNavigationBarItem(icon: Icon(Icons.receipt), label: 'Invoice'),
+    BottomNavigationBarItem(icon: Icon(Icons.receipt), label: 'Hóa Đơn'),
     BottomNavigationBarItem(
-        icon: Icon(Icons.dashboard_customize), label: 'Dashboard'),
-    BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+        icon: Icon(Icons.dashboard_customize), label: 'Thống Kê'),
+    BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Cài Đặt'),
   ];
   @override
   void initState() {

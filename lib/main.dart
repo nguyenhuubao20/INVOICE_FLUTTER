@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:invoice/networking/firebase/firebase_notification.dart';
 import 'package:invoice/setup.dart';
 import 'package:invoice/utils/request.dart';
@@ -17,6 +18,7 @@ import 'package:invoice/views/settings/setting.dart';
 import 'package:invoice/views/splash_screen.dart';
 import 'package:url_strategy/url_strategy.dart';
 
+import 'enums/date_format.dart';
 import 'networking/firebase/firebase_options.dart';
 import 'utils/theme.dart';
 import 'views/home_screen/invoice_detail.dart';
@@ -30,6 +32,8 @@ Future<void> main() async {
     HttpOverrides.global = MyHttpOverrides();
   }
   WidgetsFlutterBinding.ensureInitialized();
+  DateFormatVN.initializeTimeAgo();
+  await initializeDateFormatting('vi', null);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.android);
   DartPluginRegistrant.ensureInitialized();
   await FirebaseMessaging.instance.setAutoInitEnabled(true);
@@ -58,6 +62,10 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeViewModel.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      supportedLocales: [
+        const Locale('vi', ''), // Tiếng Việt
+        const Locale('en', ''), // Tiếng Anh
+      ],
       getPages: [
         GetPage(
             name: RouteHandler.WELCOME,

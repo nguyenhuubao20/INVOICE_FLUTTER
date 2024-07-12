@@ -1,31 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+import 'package:invoice/view_models/dashboard_view_model/dashboard_revenue_view_model.dart';
+import 'package:mrx_charts/mrx_charts.dart';
 import 'package:scoped_model/scoped_model.dart';
-import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 
 import '../../enums/view_status.dart';
-import '../../view_models/organization_view_model.dart';
+import '../../utils/theme.dart';
+import '../../widgets/dashboard/custom_info_box.dart';
+import '../../widgets/dashboard/status_card.dart';
 
 class DashboardRevenue extends StatefulWidget {
+  const DashboardRevenue({Key? key}) : super(key: key);
+
   @override
-  State<DashboardRevenue> createState() => _DashboardRevenueState();
+  _DashboardRevenueState createState() => _DashboardRevenueState();
 }
 
 class _DashboardRevenueState extends State<DashboardRevenue> {
-  late DateTime selectedDate;
-  final OrganizationViewModel organizationViewModel =
-      Get.find<OrganizationViewModel>();
+  final DashboardRevenueViewModel dashboardViewModel =
+      Get.find<DashboardRevenueViewModel>();
+
+  Map<String, int> dataRequest = {
+    'Hôm qua': 1,
+    '3 ngày gần nhất': 3,
+    '5 ngày gần nhất': 5,
+    'Tuần này': 7,
+  };
 
   @override
   void initState() {
     super.initState();
-    tz.initializeTimeZones();
-    final vietnam = tz.getLocation('Asia/Ho_Chi_Minh');
-    final now = tz.TZDateTime.now(vietnam);
-    selectedDate = now;
-    organizationViewModel.getInvoicePaymentReportByOrganization();
+    dashboardViewModel.getLastRequestDays();
+    dashboardViewModel.getRevenueReportByOrganizationDashboard();
+    dashboardViewModel.getRevenueReportByOrganization();
   }
 
   @override
@@ -34,73 +41,300 @@ class _DashboardRevenueState extends State<DashboardRevenue> {
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
-              child: ScopedModel(
-            model: Get.find<OrganizationViewModel>(),
-            child: ScopedModelDescendant<OrganizationViewModel>(
-              builder: (context, child, model) {
-                if (model.status == ViewStatus.Loading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (model.status == ViewStatus.Error) {
-                  return const Center(child: Text('Failed to load data'));
-                } else if (model.status == ViewStatus.Completed) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
+            child: ScopedModel(
+              model: Get.find<DashboardRevenueViewModel>(),
+              child: ScopedModelDescendant<DashboardRevenueViewModel>(
+                builder: (context, child, model) {
+                  if (model.status == ViewStatus.Loading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (model.status == ViewStatus.Error) {
+                    return const Center(child: Text('Không tải được dữ liệu'));
+                  } else if (model.status == ViewStatus.Completed) {
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Column(
                           children: [
-                            Text(
-                              'Total amount: ${model.invoicePaymentReport?.totalAmountReport ?? 0}',
-                              style: const TextStyle(
-                                fontSize: 16.0,
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Số liệu chi tiết",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.4,
+                                  height: 40,
+                                  child: DropdownButtonFormField<String>(
+                                    decoration: InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 5),
+                                      labelStyle: TextStyle(
+                                          color: ThemeColor.black,
+                                          fontSize: 14),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                      ),
+                                      filled: true,
+                                      fillColor: ThemeColor.white,
+                                    ),
+                                    items: dataRequest.keys.map((String key) {
+                                      return DropdownMenuItem<String>(
+                                        value: key,
+                                        child: Text(
+                                          key,
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (String? value) {
+                                      if (value != null) {
+                                        setState(() {
+                                          model.selectedKey = value;
+                                          model.setRequestDays(
+                                              dataRequest[value]!);
+                                          model.setSelectedKey(value);
+                                        });
+                                      }
+                                    },
+                                    value: model.selectedKey,
+                                    style: const TextStyle(
+                                        fontSize: 14, color: Colors.black),
+                                    icon: const Icon(Icons.arrow_drop_down,
+                                        size: 20),
+                                    isDense: true,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const Spacer(),
-                            Text(
-                              DateFormat('dd-MM-yyyy').format(selectedDate),
-                              style: TextStyle(
-                                fontSize: 16.0,
-                                color: Colors.grey[500],
-                              ),
+                            const SizedBox(height: 16.0),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    CustomInfoBox(
+                                      title: 'Tổng doanh thu',
+                                      value: model.revenueTotalReports!
+                                          .totalInvoiceReport
+                                          .toString(),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    CustomInfoBox(
+                                      title: 'Doanh thu trong ngày',
+                                      value: model.revenueTotalReports!
+                                          .totalInvoiceReportInDate
+                                          .toString(),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.calendar_today),
-                              onPressed: () async {
-                                final DateTime? picked = await showDatePicker(
-                                  context: context,
-                                  initialDate: selectedDate,
-                                  firstDate: DateTime(2015, 8),
-                                  lastDate: DateTime(2101),
-                                );
-                                if (picked != null && picked != selectedDate) {
-                                  setState(() {
-                                    selectedDate = picked;
-                                  });
-                                }
-                              },
+                            SizedBox(height: 16.0),
+                            Wrap(
+                              spacing: 30.0,
+                              runSpacing: 25.0,
+                              alignment: WrapAlignment.center,
+                              children: [
+                                StatusCardRevenue(
+                                  width: 100,
+                                  height: 100,
+                                  title: 'Thuế',
+                                  value: model.revenueTotalReports
+                                          ?.totalTaxAmountReport ??
+                                      0,
+                                  color: getBorderColor(3),
+                                ),
+                                StatusCardRevenue(
+                                  width: 100,
+                                  height: 100,
+                                  title: 'Tổng tiền sau thuế',
+                                  value: model.revenueTotalReports
+                                          ?.totalAmountAfterTaxReport ??
+                                      0,
+                                  color: getBorderColor(4),
+                                ),
+                                StatusCardRevenue(
+                                  width: 100,
+                                  height: 100,
+                                  title: 'Tổng giảm giá',
+                                  value: model.revenueTotalReports
+                                          ?.totalDiscountAmountReport ??
+                                      0,
+                                  color: getBorderColor(5),
+                                ),
+                                StatusCardRevenue(
+                                  width: 100,
+                                  height: 100,
+                                  title: 'Tổng tiền không bao gồm thuế',
+                                  value: model.revenueTotalReports
+                                          ?.totalAmountWithoutTaxReport ??
+                                      0,
+                                  color: getBorderColor(6),
+                                ),
+                                StatusCardRevenue(
+                                  width: 100,
+                                  height: 100,
+                                  title: 'Tổng tiền',
+                                  value: model.revenueTotalReports
+                                          ?.totalAmountReport ??
+                                      0,
+                                  color: getBorderColor(7),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 16.0),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  model.requestDays.toString() +
+                                      " ngày gần nhất",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8.0),
+                            ScopedModel(
+                              model: Get.find<DashboardRevenueViewModel>(),
+                              child: ScopedModelDescendant<
+                                  DashboardRevenueViewModel>(
+                                builder: (context, child, model) {
+                                  if (model.status == ViewStatus.Empty) {
+                                    return const Center(
+                                      child: Text(
+                                        'Không có dữ liệu',
+                                        style: TextStyle(
+                                          color: Colors.blue,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    );
+                                  } else if (model.status ==
+                                      ViewStatus.Loading) {
+                                    return const Center(
+                                        child: CircularProgressIndicator());
+                                  } else if (model.status == ViewStatus.Error) {
+                                    return const Center(
+                                      child: Text(
+                                        'Không tải được dữ liệu',
+                                        style: TextStyle(
+                                          color: Colors.blue,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    return SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.4,
+                                      width: MediaQuery.of(context).size.width *
+                                          0.9,
+                                      child: Chart(
+                                        padding: EdgeInsets.all(8.0),
+                                        layers: [
+                                          ChartAxisLayer(
+                                            settings: ChartAxisSettings(
+                                              x: ChartAxisSettingsAxis(
+                                                frequency: 1.0,
+                                                max:
+                                                    (model.chartData.length - 1)
+                                                        .toDouble(),
+                                                min: 0,
+                                                textStyle: TextStyle(
+                                                  color: Colors.black
+                                                      .withOpacity(0.6),
+                                                  fontSize: 14.0,
+                                                ),
+                                              ),
+                                              y: ChartAxisSettingsAxis(
+                                                frequency: (model.maxRevenue +
+                                                        model.minRevenue) /
+                                                    3,
+                                                max: model.maxRevenue,
+                                                min: model.minRevenue,
+                                                textStyle: TextStyle(
+                                                  color: Colors.black
+                                                      .withOpacity(0.6),
+                                                  fontSize: 14.0,
+                                                ),
+                                              ),
+                                            ),
+                                            labelX: (value) => model
+                                                .chartData.keys
+                                                .toList()[value.toInt()]!,
+                                            labelY: (value) =>
+                                                value.toInt().toString(),
+                                          ),
+                                          ChartLineLayer(
+                                            items: List.generate(
+                                              model.chartData.length,
+                                              (index) => ChartLineDataItem(
+                                                value: model.chartData.values
+                                                    .toList()[index]!
+                                                    .totalInvoiceReportInDate!
+                                                    .toDouble(),
+                                                x: index.toDouble(),
+                                              ),
+                                            ),
+                                            settings: const ChartLineSettings(
+                                              thickness: 2.0,
+                                              color: Colors.blue,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8.0),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [],
-                        ),
-                      ],
-                    ),
-                  );
-                } else {
-                  return const SizedBox.shrink();
-                }
-              },
+                      ),
+                    );
+                  } else {
+                    return const Center(child: Text("Failed to load data"));
+                  }
+                },
+              ),
             ),
-          )),
-          SliverToBoxAdapter(),
+          ),
         ],
       ),
     );
+  }
+}
+
+Color getBorderColor(int? status) {
+  switch (status) {
+    case 1:
+      return Colors.green;
+    case 2:
+      return Colors.red;
+    default:
+      return Colors.orange;
   }
 }

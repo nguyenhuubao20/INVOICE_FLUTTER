@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:invoice/enums/invoice_status.dart';
 import 'package:invoice/enums/view_status.dart';
 import 'package:invoice/models/invoice.dart';
 import 'package:invoice/models/invoice_history_partner.dart';
@@ -82,31 +83,6 @@ class InvoiceViewModel extends BaseViewModel {
     notifyListeners();
   }
 
-  int convertStatusToInt(String? newStatus) {
-    switch (newStatus) {
-      case 'Draft':
-        return 0;
-      case 'Success':
-        return 1;
-      case 'Sent':
-        return 2;
-      case 'Pending Approval':
-        return 3;
-      case 'Completed':
-        return 4;
-      case 'Failed':
-        return 5;
-      case 'Pending':
-        return 6;
-      case 'RetryPending':
-        return 7;
-      case 'Replaced':
-        return 8;
-      default:
-        return -1;
-    }
-  }
-
   String? convertDateTimeToString(DateTime? dateTime) {
     if (dateTime != null) {
       return DateFormat('yyyy-MM-dd').format(dateTime);
@@ -116,7 +92,7 @@ class InvoiceViewModel extends BaseViewModel {
 
   Future<bool> loadInvoice({bool isRefresh = false}) async {
     try {
-      int selectedStatusIndex = convertStatusToInt(selectedStatusStr);
+      int selectedStatusIndex = invoiceStatusFromString(selectedStatusStr);
       String? selectedDateStr = convertDateTimeToString(selectedDate);
       if (isRefresh) {
         currentPage = 1;
@@ -165,7 +141,7 @@ class InvoiceViewModel extends BaseViewModel {
         } else {
           _invoiceList.addAll(invoiceResponse.items!);
         }
-        _invoiceList.sort((b, a) => a.createdDate!.compareTo(b.createdDate!));
+        _invoiceList.sort((a, b) => b.createdDate!.compareTo(a.createdDate!));
         setState(ViewStatus.Completed);
         notifyListeners();
         return true;
@@ -188,11 +164,7 @@ class InvoiceViewModel extends BaseViewModel {
         setState(ViewStatus.Completed);
         notifyListeners();
       } else {
-        setState(ViewStatus.Error, 'Invoice History Partner not found');
-        showAlertDialog(
-            title: 'Error',
-            content: 'Invoice History Partner is error',
-            confirmText: 'OK');
+        setState(ViewStatus.Empty, 'Waiting');
       }
     } catch (e) {
       setState(ViewStatus.Error, 'Failed to load Invoice History Partner');
@@ -212,6 +184,7 @@ class InvoiceViewModel extends BaseViewModel {
           title: 'Success',
           content: 'Approval invoice successfully',
           confirmText: 'OK');
+      loadInvoice(isRefresh: true);
       notifyListeners();
       setState(ViewStatus.Completed);
     } catch (e) {

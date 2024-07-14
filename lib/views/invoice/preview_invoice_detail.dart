@@ -242,7 +242,7 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                               invoice!.responsePartNer
                                                                           ?.message !=
                                                                       null
-                                                                  ? 'Lỗi'
+                                                                  ? 'Tình trạng'
                                                                   : '',
                                                               style:
                                                                   const TextStyle(
@@ -261,8 +261,8 @@ class _PreviewInvoiceDetailState extends State<PreviewInvoiceDetail> {
                                                                   '',
                                                               style:
                                                                   const TextStyle(
-                                                                color:
-                                                                    Colors.red,
+                                                                color: Colors
+                                                                    .black,
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .bold,

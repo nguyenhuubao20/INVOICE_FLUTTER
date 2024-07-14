@@ -63,8 +63,8 @@ class MyApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: themeViewModel.isDarkMode ? ThemeMode.dark : ThemeMode.light,
       supportedLocales: [
-        const Locale('vi', ''), // Tiếng Việt
-        const Locale('en', ''), // Tiếng Anh
+        const Locale('vi', ''),
+        const Locale('en', ''),
       ],
       getPages: [
         GetPage(

@@ -49,7 +49,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
           ),
           bottom: TabBar(
             tabs: [
-              Tab(icon: Icon(Icons.visibility), text: 'Preview'),
+              Tab(icon: Icon(Icons.visibility), text: 'Chi tiết'),
               Tab(icon: Icon(Icons.picture_as_pdf), text: 'PDF'),
             ],
             labelColor: ThemeColor.primary,

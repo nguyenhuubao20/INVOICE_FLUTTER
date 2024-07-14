@@ -74,6 +74,73 @@ Future<bool> showAlertDialog(
   return result;
 }
 
+Future<void> showMessageDialog({
+  String title = "Thông báo",
+  String message = "Nội dung thông báo",
+}) async {
+  hideDialog();
+  await Get.dialog(Dialog(
+    shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8.0))),
+    child: Container(
+      width: Get.size.width * 0.3,
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Get.theme.colorScheme.background,
+        shape: BoxShape.rectangle,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Get.theme.colorScheme.shadow,
+            blurRadius: 10.0,
+            offset: Offset(0.0, 10.0),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Text(
+            title,
+            style: Get.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Text(
+              message,
+              style: Get.textTheme.bodyMedium,
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  Get.back();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ThemeColor.primary,
+                  textStyle: const TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+                child: Text(
+                  "Đồng ý",
+                  style:
+                      Get.textTheme.bodyMedium?.copyWith(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  ));
+}
+
 Future<bool> showConfirmDialog({
   String title = "Xác nhận",
   String content = "Bạn có chắc chắn muốn thực hiện thao tác này?",

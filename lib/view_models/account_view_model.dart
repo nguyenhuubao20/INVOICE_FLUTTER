@@ -3,7 +3,7 @@ import 'package:invoice/models/account.dart';
 import 'package:invoice/utils/request.dart';
 import 'package:invoice/utils/share_pref.dart';
 import 'package:invoice/view_models/base_view_model.dart';
-import 'package:invoice/view_models/brand_view_model.dart';
+import 'package:invoice/view_models/invoice_view_model.dart';
 import 'package:invoice/view_models/startup_view_model.dart';
 
 import '../api/account_api.dart';
@@ -41,7 +41,8 @@ class AccountViewModel extends BaseViewModel {
         await setToken(account?.accessToken);
         switch (account!.role) {
           case 0:
-            await Get.find<BrandViewModel>().loadOrganizationList();
+            await Get.find<OrganizationViewModel>()
+                .getOrganizationListByBrandId();
             break;
           case 2:
             await Get.find<OrganizationViewModel>().getStoreByOrganizationId();
@@ -59,8 +60,7 @@ class AccountViewModel extends BaseViewModel {
         Get.snackbar('Lỗi đăng nhập', 'Đã xảy ra lỗi');
       }
     } catch (e) {
-      print('Đã xảy ra lỗi: $e');
-      Get.snackbar('cccccc', 'Đã xảy ra lỗi khi đăng nhập');
+      Get.snackbar('Lỗi', 'Đã xảy ra lỗi khi đăng nhập');
     } finally {
       hideDialog();
     }
@@ -76,12 +76,12 @@ class AccountViewModel extends BaseViewModel {
       account = null;
       await removeALL();
       await Get.find<StartUpViewModel>().handleStartUpLogic();
+      Get.find<InvoiceViewModel>().removeAll();
       hideDialog();
     }
   }
 
   Future<Account?> checkUserIsLogged() async {
-
     try {
       account = await accountAPI.checkUserIsLogged();
       if (account != null) {
@@ -93,8 +93,7 @@ class AccountViewModel extends BaseViewModel {
     } catch (e) {
       print('Error checking user login status: $e');
       return null;
-    } finally {
-    }
+    } finally {}
   }
 
   Future<void> getAccountInfo(String id) async {

@@ -7,7 +7,7 @@ import 'package:invoice/view_models/account_view_model.dart';
 
 import '../../api/organization_api.dart';
 import '../../enums/view_status.dart';
-import '../../models/invoice.dart';
+import '../../models/invoice_dashboard.dart';
 import '../../widgets/other_dialogs/dialog.dart';
 import '../base_view_model.dart';
 

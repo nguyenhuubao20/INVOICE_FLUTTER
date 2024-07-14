@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:invoice/view_models/base_view_model.dart';
-import 'package:invoice/view_models/brand_view_model.dart';
 import 'package:invoice/view_models/organization_view_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -33,7 +32,8 @@ class StartUpViewModel extends BaseViewModel {
     if (account != null) {
       switch (account.role) {
         case 0:
-          await Get.find<BrandViewModel>().loadOrganizationList();
+          await Get.find<OrganizationViewModel>()
+              .getOrganizationListByBrandId();
           break;
         case 2:
           await Get.find<OrganizationViewModel>().getStoreByOrganizationId();

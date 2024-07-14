@@ -5,6 +5,7 @@ import 'package:invoice/enums/date_format.dart';
 import 'package:invoice/enums/view_status.dart';
 import 'package:invoice/models/account.dart';
 import 'package:invoice/models/invoice.dart';
+import 'package:invoice/models/organization.dart';
 import 'package:invoice/utils/route_constrant.dart';
 import 'package:invoice/utils/theme.dart';
 import 'package:invoice/view_models/invoice_view_model.dart';
@@ -15,6 +16,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../enums/invoice_status.dart';
+import '../../models/invoice_dashboard.dart';
 import '../../models/store.dart';
 import '../../view_models/account_view_model.dart';
 import '../../widgets/other_dialogs/dialog.dart';
@@ -42,8 +44,11 @@ class _HomePageState extends State<HomePage> {
       Get.find<OrganizationViewModel>();
   String? selectedStoreId;
   String? selectedStoreStr;
+  String? selectedOrganizationId;
+  String? selectedOrganizationStr;
   DateTime? selectedDate;
   String? selectedDateStr;
+  List<dynamic>? dataList;
   late int? _selectedStatusIndex = -1;
   late String? _selectedStatus = null;
   late String selectedname = '';
@@ -74,6 +79,22 @@ class _HomePageState extends State<HomePage> {
       _invoiceViewModel.loadInvoice();
     });
     refreshController.requestRefresh();
+  }
+
+  void handleSelectedItem(dynamic selectedItem) {
+    setState(() {
+      if (selectedItem is Store) {
+        selectedStoreId = selectedItem.id!;
+        selectedStoreStr = selectedItem.name!;
+        _invoiceViewModel.setStore(selectedStoreId, selectedStoreStr);
+      } else if (selectedItem is Organization) {
+        selectedOrganizationId = selectedItem.id!;
+        selectedOrganizationStr = selectedItem.name!;
+        _invoiceViewModel.setOrganization(
+            selectedOrganizationId, selectedOrganizationStr);
+      }
+      setInvoiceToDisplayed();
+    });
   }
 
   void _onRefresh() async {
@@ -188,26 +209,18 @@ class _HomePageState extends State<HomePage> {
                                   ScopedModelDescendant<OrganizationViewModel>(
                                 builder: (context, child, model) {
                                   if (model.status == ViewStatus.Completed) {
-                                    List<Store>? storeList = model.storeList;
+                                    if (_accountViewModel.account!.role == 2) {
+                                      dataList = model.storeList;
+                                    } else {
+                                      dataList = model.organizationList;
+                                    }
                                     return SizedBox(
                                       height:
                                           MediaQuery.of(context).size.height *
                                               0.5,
                                       child: StoreListBottomSheet(
-                                        storeList: storeList,
-                                        onSelectStore:
-                                            (selectedStore, selectedStoreStr) {
-                                          setState(() {
-                                            for (var s in storeList!) {
-                                              selectedStoreId = s.id!;
-                                              selectedStoreStr = s.name!;
-                                              _invoiceViewModel.setStore(
-                                                  selectedStoreId,
-                                                  selectedStoreStr);
-                                              setInvoiceToDisplayed();
-                                            }
-                                          });
-                                        },
+                                        dataList: dataList ?? [],
+                                        onSelectItem: handleSelectedItem,
                                       ),
                                     );
                                   }
@@ -224,8 +237,12 @@ class _HomePageState extends State<HomePage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                _invoiceViewModel.selectedStoreNameStr ??
-                                    'Chọn cửa hàng',
+                                _accountViewModel.account!.role == 2
+                                    ? _invoiceViewModel.selectedStoreNameStr ??
+                                        'Chọn cửa hàng'
+                                    : _invoiceViewModel
+                                            .selectedOrganizationNameStr ??
+                                        'Chọn tổ chức',
                                 style: const TextStyle(
                                   fontSize: 16.0,
                                   color: Colors.black,

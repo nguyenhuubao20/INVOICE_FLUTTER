@@ -89,7 +89,7 @@ class InvoiceAPI {
     }
   }
 
-  Future<InvoiceResponse?> getInvoiceListByStoreIdAndCreatedDateAndStatus(
+  Future<InvoiceResponse?> getInvoiceListByStoreId(
     int currentPage,
     String? storeId,
     String? createDate,
@@ -109,6 +109,38 @@ class InvoiceAPI {
         'size': size,
       };
       final res = await request.get('stores/${storeId}/invoices',
+          queryParameters: params);
+      if (res.statusCode == 200) {
+        return InvoiceResponse.fromJson(res.data);
+      } else {
+        throw Exception('Failed to load invoices: ${res.statusCode}');
+      }
+    } catch (e) {
+      print('Error during get invoices: $e');
+      return null;
+    }
+  }
+
+  Future<InvoiceResponse?> getInvoiceListByOrganization(
+    int currentPage,
+    String? organizationId,
+    String? createDate,
+    int? status,
+    String? name,
+  ) async {
+    try {
+      if (status == -1) {
+        status = null;
+      }
+      var params = {
+        'id': organizationId,
+        'date': createDate,
+        'status': status,
+        'name': name,
+        'page': currentPage,
+        'size': size,
+      };
+      final res = await request.get('organizations/${organizationId}/invoices',
           queryParameters: params);
       if (res.statusCode == 200) {
         return InvoiceResponse.fromJson(res.data);

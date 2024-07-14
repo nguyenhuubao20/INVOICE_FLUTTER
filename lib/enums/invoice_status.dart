@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 
+enum LoadInvoiceStatus {
+  success,
+  empty,
+  error,
+  noMoreData,
+}
+
 List<String> InvoiceStatusListString = [
   'Tất cả', // All
   'Bản nháp', // Draft

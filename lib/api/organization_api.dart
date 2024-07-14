@@ -1,8 +1,8 @@
 import 'package:intl/intl.dart';
-import 'package:invoice/models/invoice.dart';
 import 'package:invoice/utils/request.dart';
 import 'package:invoice/utils/share_pref.dart';
 
+import '../models/invoice_dashboard.dart';
 import '../models/store.dart';
 
 class OrganizationAPI {

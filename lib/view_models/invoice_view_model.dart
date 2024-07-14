@@ -10,6 +10,7 @@ import 'package:invoice/widgets/other_dialogs/dialog.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../api/invoice_api.dart';
+import '../utils/string_constrant.dart';
 
 class InvoiceViewModel extends BaseViewModel {
   late Invoice _invoice;
@@ -32,6 +33,9 @@ class InvoiceViewModel extends BaseViewModel {
   String? searchName;
   String? selectedStoreId;
 
+  String? selectedOrganizationNameStr;
+  String? selectedOrganizationId;
+
   int? selectedStatusIndex;
 
   final AccountViewModel _accountViewModel = Get.find<AccountViewModel>();
@@ -48,6 +52,12 @@ class InvoiceViewModel extends BaseViewModel {
   void setStore(String? id, String? name) {
     selectedStoreId = id;
     selectedStoreNameStr = name;
+    notifyListeners();
+  }
+
+  void setOrganization(String? id, String? name) {
+    selectedOrganizationId = id;
+    selectedOrganizationNameStr = name;
     notifyListeners();
   }
 
@@ -75,6 +85,8 @@ class InvoiceViewModel extends BaseViewModel {
   void removeAll() {
     selectedDate = null;
     selectedStoreNameStr = null;
+    selectedOrganizationId = null;
+    selectedOrganizationNameStr = null;
     selectedStatusStr = null;
     selectedDateStr = null;
     searchName = null;
@@ -104,14 +116,20 @@ class InvoiceViewModel extends BaseViewModel {
         }
       }
       InvoiceResponse? invoiceResponse;
-      if (selectedStoreId != null) {
-        invoiceResponse = await InvoiceAPI()
-            .getInvoiceListByStoreIdAndCreatedDateAndStatus(
-                currentPage,
-                selectedStoreId,
-                selectedDateStr,
-                selectedStatusIndex,
-                searchName);
+      if (selectedStoreId != null && selectedOrganizationId == null) {
+        invoiceResponse = await InvoiceAPI().getInvoiceListByStoreId(
+            currentPage,
+            selectedStoreId,
+            selectedDateStr,
+            selectedStatusIndex,
+            searchName);
+      } else if (selectedOrganizationId != null && selectedStoreId == null) {
+        invoiceResponse = await InvoiceAPI().getInvoiceListByOrganization(
+            currentPage,
+            selectedOrganizationId,
+            selectedDateStr,
+            selectedStatusIndex,
+            searchName);
       } else {
         switch (_accountViewModel.account!.role) {
           case 1:
@@ -122,12 +140,10 @@ class InvoiceViewModel extends BaseViewModel {
             invoiceResponse = await InvoiceAPI().getInvoicesByOrganizationAdmin(
                 currentPage, selectedDateStr, selectedStatusIndex, searchName);
             break;
-          case 0:
+          default:
             invoiceResponse = await InvoiceAPI().getInvoicesByBrandAdmin(
                 currentPage, selectedDateStr, selectedStatusIndex, searchName);
             break;
-          default:
-            throw Exception('Unknown role');
         }
       }
 
@@ -146,10 +162,10 @@ class InvoiceViewModel extends BaseViewModel {
         notifyListeners();
         return true;
       } else {
-        setState(ViewStatus.Empty, 'Invoice list is empty');
+        setState(ViewStatus.Empty, Message.emptyInvoiceList);
       }
     } catch (e) {
-      setState(ViewStatus.Error, 'Failed to load invoice list: $e');
+      setState(ViewStatus.Error, Message.errorLoadInvoice);
     }
     return false;
   }
@@ -164,14 +180,14 @@ class InvoiceViewModel extends BaseViewModel {
         setState(ViewStatus.Completed);
         notifyListeners();
       } else {
-        setState(ViewStatus.Empty, 'Waiting');
+        setState(ViewStatus.Empty, Message.errorLoadInvoiceHistoryPartner);
       }
     } catch (e) {
-      setState(ViewStatus.Error, 'Failed to load Invoice History Partner');
+      setState(ViewStatus.Error, Message.errorLoadInvoiceHistoryPartner);
       showAlertDialog(
-          title: 'Error',
-          content: 'Invoice History Partner is error',
-          confirmText: 'OK');
+          title: Message.error,
+          content: Message.errorLoadInvoiceHistoryPartnerContent,
+          confirmText: Message.confirm);
     }
   }
 
@@ -179,18 +195,27 @@ class InvoiceViewModel extends BaseViewModel {
     try {
       setState(ViewStatus.Loading);
       await Future.delayed(const Duration(seconds: 1));
-      await InvoiceAPI().approvalInvoice(invoiceId);
-      showAlertDialog(
-          title: 'Success',
-          content: 'Approval invoice successfully',
-          confirmText: 'OK');
-      loadInvoice(isRefresh: true);
-      notifyListeners();
-      setState(ViewStatus.Completed);
+      if (_accountViewModel.account!.role == 2) {
+        await InvoiceAPI().approvalInvoice(invoiceId);
+        showAlertDialog(
+            title: Message.success,
+            content: Message.approvalInvoiceSuccess,
+            confirmText: Message.confirm);
+        loadInvoice(isRefresh: true);
+        notifyListeners();
+        setState(ViewStatus.Completed);
+      } else {
+        showConfirmDialog(
+            title: Message.error, content: Message.approvalInvoiceNoAccess);
+        notifyListeners();
+        setState(ViewStatus.Completed);
+      }
     } catch (e) {
-      String errorDescription = 'Failed to load Invoice History Partner';
+      String errorDescription = Message.approvalInvoiceError;
       showAlertDialog(
-          title: 'Error', content: errorDescription, confirmText: 'OK');
+          title: Message.error,
+          content: errorDescription,
+          confirmText: Message.confirm);
       setState(ViewStatus.Error, errorDescription);
     }
   }

@@ -1,13 +1,15 @@
 import 'dart:developer';
 
 import 'package:get/get.dart';
-import 'package:invoice/models/invoice.dart';
 import 'package:invoice/view_models/account_view_model.dart';
 import 'package:invoice/view_models/base_view_model.dart';
 import 'package:invoice/widgets/other_dialogs/dialog.dart';
 
+import '../api/brand_api.dart';
 import '../api/organization_api.dart';
 import '../enums/view_status.dart';
+import '../models/invoice_dashboard.dart';
+import '../models/organization.dart';
 import '../models/store.dart';
 
 class OrganizationViewModel extends BaseViewModel {
@@ -17,6 +19,7 @@ class OrganizationViewModel extends BaseViewModel {
   List<Store>? storeList = [];
   List<String>? storeNames = [];
   InvoiceReport? invoiceReports;
+  List<Organization>? organizationList = [];
   InvoicePaymentReport? invoicePaymentReport;
 
   Future<void> getStoreByOrganizationId() async {
@@ -30,21 +33,44 @@ class OrganizationViewModel extends BaseViewModel {
           setState(ViewStatus.Completed);
           notifyListeners();
         } else {
-          setState(ViewStatus.Error, 'Invoice list not found');
+          setState(ViewStatus.Error, 'Không có danh sách cửa hàng nào');
         }
       } else {
-        // showAlertDialog(
-        //     title: 'Error', content: 'You have no access to load store list');
+        showMessageDialog(
+            title: 'Lỗi', message: 'Bạn không có quyền truy cập dữ liệu này');
       }
     } catch (e) {
-      setState(ViewStatus.Error, 'Failed to load invoice list');
+      setState(ViewStatus.Error, 'Thất bại khi tải danh sách cửa hàng');
+    }
+  }
+
+  //forBrand
+  Future<void> getOrganizationListByBrandId() async {
+    try {
+      setState(ViewStatus.Loading);
+      await Future.delayed(const Duration(seconds: 1));
+      if (_accountViewModel.account!.role == 0) {
+        organizationList = await BrandAPI().getOrganizationListByBrandId();
+        // getStoreNames();
+        if (organizationList != null) {
+          setState(ViewStatus.Completed);
+          notifyListeners();
+        } else {
+          setState(ViewStatus.Error, 'Không có danh sách tổ chức nào');
+        }
+      } else {
+        showMessageDialog(
+            title: 'Lỗi', message: 'Bạn không có quyền truy cập dữ liệu này');
+      }
+    } catch (e) {
+      setState(ViewStatus.Error, 'Tải danh sách tổ chức thất bại');
     }
   }
 
   Future<void> getInvoiceReportByOrganization(
       {DateTime? fromDate,
       DateTime? toDate,
-      String errorMessage = 'Failed to load invoice list',
+      String errorMessage = 'Thất bại khi tải báo cáo hóa đơn',
       Duration delay = const Duration(seconds: 1)}) async {
     try {
       setState(ViewStatus.Loading);
@@ -57,13 +83,11 @@ class OrganizationViewModel extends BaseViewModel {
           setState(ViewStatus.Completed);
           notifyListeners();
         } else {
-          setState(ViewStatus.Error, 'Invoice list not found');
+          setState(ViewStatus.Error, 'Báo cáo hóa đơn không tìm thấy');
         }
       } else {
-        showAlertDialog(
-          title: 'Error',
-          content: 'You have no access to load this data',
-        );
+        showMessageDialog(
+            title: 'Lỗi', message: 'Bạn không có quyền truy cập dữ liệu này');
       }
     } catch (e, stackTrace) {
       log('Error loading invoice report: $e', stackTrace: stackTrace);
@@ -74,7 +98,7 @@ class OrganizationViewModel extends BaseViewModel {
   Future<void> getInvoicePaymentReportByOrganization(
       {DateTime? fromDate,
       DateTime? toDate,
-      String errorMessage = 'Failed to load payment report',
+      String errorMessage = 'Thất bại khi tải báo cáo thanh toán hóa đơn',
       Duration delay = const Duration(seconds: 1)}) async {
     try {
       setState(ViewStatus.Loading);
@@ -86,13 +110,12 @@ class OrganizationViewModel extends BaseViewModel {
           setState(ViewStatus.Completed);
           notifyListeners();
         } else {
-          setState(ViewStatus.Error, 'Invoice list not found');
+          setState(
+              ViewStatus.Error, 'Báo cáo thanh toán hóa đơn không tìm thấy');
         }
       } else {
-        showAlertDialog(
-          title: 'Error',
-          content: 'You have no access to load this data',
-        );
+        showMessageDialog(
+            title: 'Lỗi', message: 'Bạn không có quyền truy cập dữ liệu này');
       }
     } catch (e, stackTrace) {
       log('Error loading invoice report: $e', stackTrace: stackTrace);

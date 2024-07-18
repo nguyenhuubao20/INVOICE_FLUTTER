@@ -11,15 +11,16 @@ class Setting extends StatelessWidget {
     final themeViewModel = ThemeViewModel();
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings'),
+        automaticallyImplyLeading: false,
+        title: Text('Cài đặt'),
       ),
       body: SettingsList(
         sections: [
           SettingsSection(
-            title: Text('Common'),
+            title: Text('Chung'),
             tiles: [
               SettingsTile.switchTile(
-                title: Text('Dark Mode'),
+                title: Text('Chế độ tối'),
                 leading: Icon(Icons.dark_mode),
                 initialValue: themeViewModel.isDarkMode,
                 onToggle: (bool value) {
@@ -27,14 +28,14 @@ class Setting extends StatelessWidget {
                 },
               ),
               SettingsTile(
-                title: Text('Language'),
+                title: Text('Ngôn ngữ'),
                 leading: Icon(Icons.language),
                 onPressed: (BuildContext context) {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: Text('Select Language'),
+                        title: Text('Lựa chọn ngôn ngữ'),
                         content: SingleChildScrollView(
                           child: ListBody(
                             children: <Widget>[
@@ -45,7 +46,7 @@ class Setting extends StatelessWidget {
                                 },
                               ),
                               GestureDetector(
-                                child: Text('Vietnamese'),
+                                child: Text('Tiếng Việt'),
                                 onTap: () {
                                   Navigator.pop(context);
                                 },
@@ -59,7 +60,7 @@ class Setting extends StatelessWidget {
                 },
               ),
               SettingsTile(
-                title: Text('Environment'),
+                title: Text('Môi trường'),
                 leading: Icon(Icons.cloud),
                 onPressed: (BuildContext context) {
                   // Implement environment settings
@@ -69,10 +70,10 @@ class Setting extends StatelessWidget {
             ],
           ),
           SettingsSection(
-            title: Text('Account'),
+            title: Text('Tài khoản'),
             tiles: [
               SettingsTile(
-                title: Text('Signout'),
+                title: Text('Đăng xuất'),
                 leading: Icon(Icons.logout),
                 onPressed: (BuildContext context) {
                   // Implement logout functionality
@@ -80,7 +81,7 @@ class Setting extends StatelessWidget {
                 },
               ),
               SettingsTile(
-                title: Text('Change password'),
+                title: Text('Thay đổi mật khẩu'),
                 leading: Icon(Icons.lock),
                 onPressed: (BuildContext context) {
                   // Implement change password functionality
@@ -90,10 +91,10 @@ class Setting extends StatelessWidget {
             ],
           ),
           SettingsSection(
-            title: Text('Misc'),
+            title: Text('Khác'),
             tiles: [
               SettingsTile(
-                title: Text('Policy'),
+                title: Text('Chính sách'),
                 leading: Icon(Icons.policy),
                 onPressed: (BuildContext context) {
                   // Implement policy settings

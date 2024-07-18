@@ -91,7 +91,10 @@ class OrganizationAPI {
       );
 
       if (res.statusCode == 200) {
-        return InvoicePaymentReport.fromJson(res.data);
+        InvoicePaymentReport invoicePaymentReport =
+            InvoicePaymentReport.fromJson(res.data);
+
+        return invoicePaymentReport;
       } else {
         throw Exception('Failed to load invoice report: ${res.statusCode}');
       }

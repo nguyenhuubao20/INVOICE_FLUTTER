@@ -18,10 +18,9 @@ class DashboardRevenueViewModel extends BaseViewModel {
   double maxRevenue = 0;
   double minRevenue = 0;
 
-  String selectedKey = 'Tuần này';
-  int requestDays = 7;
+  String selectedKey = 'Hôm qua';
+  int requestDays = 2;
   List<String> dateData = [];
-  List<String> data = [];
   Map<String?, InvoicePaymentReport?> chartData = {};
 
   void setRequestDays(int requestDays) {
@@ -57,7 +56,6 @@ class DashboardRevenueViewModel extends BaseViewModel {
       String formattedDate = formatter.format(date);
       dateData.add(formattedDate);
     }
-    notifyListeners();
     return dateData;
   }
 
@@ -67,18 +65,6 @@ class DashboardRevenueViewModel extends BaseViewModel {
       await Future.delayed(const Duration(seconds: 1));
       DateFormat formatter = DateFormat('yyyy-MM-dd');
 
-      if (dateData.isEmpty) {
-        var revenueReports = await OrganizationAPI()
-            .getInvoiceReportPaymentByOrganization(null, null);
-        if (revenueReports != null) {
-          addRevenueReportData(revenueReports);
-          setState(ViewStatus.Completed);
-        } else {
-          setState(ViewStatus.Error, 'Revenue list not found');
-        }
-        return;
-      }
-
       for (String? dateString in dateData) {
         DateTime? date;
         if (dateString != null) {
@@ -87,37 +73,30 @@ class DashboardRevenueViewModel extends BaseViewModel {
         var revenueReports = await OrganizationAPI()
             .getInvoiceReportPaymentByOrganization(date, date);
         if (revenueReports != null) {
-          addRevenueReportData(revenueReports);
           final dateFormat = DateFormatVN.formatDateDDMM("${dateString}");
           chartData[dateFormat] = revenueReports;
+        } else {
+          final dateFormat = DateFormatVN.formatDateDDMM("${dateString}");
+          chartData[dateFormat] = InvoicePaymentReport.empty();
         }
       }
-
-      if (data.isNotEmpty) {
-        this.data = data;
-        notifyListeners();
-        setState(ViewStatus.Completed);
-      } else {
-        setState(ViewStatus.Error, 'Revenue list not found');
-      }
+      setMinMaxRevenue(getMinTotalRevenueInDate().toDouble(),
+          getMaxTotalRevenueInDate().toDouble());
+      setState(ViewStatus.Completed);
+      notifyListeners();
     } catch (e) {
       setState(ViewStatus.Error, 'Failed to load revenue list');
     }
   }
 
-  void addRevenueReportData(InvoicePaymentReport revenueReports) {
-    data.add(revenueReports.totalInvoiceReportInDate.toString());
-  }
-
-  Future<void> getRevenueReportByOrganization(
-      {DateTime? fromDate,
-      DateTime? toDate,
-      String errorMessage = 'Failed to load revenue list',
-      Duration delay = const Duration(seconds: 1)}) async {
+  Future<void> getRevenueReportByOrganization({
+    DateTime? fromDate,
+    DateTime? toDate,
+    String errorMessage = 'Failed to load revenue list',
+  }) async {
     try {
       setState(ViewStatus.Loading);
-      await Future.delayed(delay);
-
+      await Future.delayed(const Duration(seconds: 1));
       if (_accountViewModel.account?.role == 2) {
         revenueTotalReports = await OrganizationAPI()
             .getInvoiceReportPaymentByOrganization(fromDate, toDate);
@@ -141,29 +120,29 @@ class DashboardRevenueViewModel extends BaseViewModel {
     }
   }
 
-  int getMaxTotalRevenueInDate() {
-    int max = 0;
+  double getMaxTotalRevenueInDate() {
+    double max = 0;
     for (var entry in chartData.entries) {
       if (entry.value != null) {
-        int totalAmount = entry.value!.totalInvoiceReportInDate ?? 0;
+        double totalAmount = entry.value!.totalAmountReport ?? 0;
         if (totalAmount > max) {
           max = totalAmount;
         }
       }
     }
-    return max;
+    return max.toDouble();
   }
 
-  int getMinTotalRevenueInDate() {
-    int min = 0;
+  double getMinTotalRevenueInDate() {
+    double min = 0;
     for (var entry in chartData.entries) {
       if (entry.value != null) {
-        int totalAmount = entry.value!.totalInvoiceReportInDate ?? 0;
+        double totalAmount = entry.value!.totalAmountReport ?? 0;
         if (totalAmount < min) {
           min = totalAmount;
         }
       }
     }
-    return min;
+    return min.toDouble();
   }
 }

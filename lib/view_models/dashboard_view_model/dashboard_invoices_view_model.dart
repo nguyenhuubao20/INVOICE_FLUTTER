@@ -18,10 +18,9 @@ class DashboardInvoiceViewModel extends BaseViewModel {
   double maxInvoices = 0;
   double minInvoices = 0;
 
-  String selectedKey = 'Tuần này';
-  int requestDays = 7;
+  String selectedKey = 'Hôm qua';
+  int requestDays = 2;
   List<String> dateData = [];
-  List<String> data = [];
   Map<String?, InvoiceReport?> chartData = {};
 
   void setRequestDays(int requestDays) {
@@ -57,7 +56,6 @@ class DashboardInvoiceViewModel extends BaseViewModel {
       String formattedDate = formatter.format(date);
       dateData.add(formattedDate);
     }
-    notifyListeners();
     return dateData;
   }
 
@@ -67,18 +65,6 @@ class DashboardInvoiceViewModel extends BaseViewModel {
       await Future.delayed(const Duration(seconds: 1));
       DateFormat formatter = DateFormat('yyyy-MM-dd');
 
-      if (dateData.isEmpty) {
-        var invoiceReports =
-            await OrganizationAPI().getInvoiceReportByOrganization(null, null);
-        if (invoiceReports != null) {
-          addInvoiceReportData(invoiceReports);
-          setState(ViewStatus.Completed);
-        } else {
-          setState(ViewStatus.Error, 'Invoice list not found');
-        }
-        return;
-      }
-
       for (String? dateString in dateData) {
         DateTime? date;
         if (dateString != null) {
@@ -87,46 +73,33 @@ class DashboardInvoiceViewModel extends BaseViewModel {
         var invoiceReports =
             await OrganizationAPI().getInvoiceReportByOrganization(date, date);
         if (invoiceReports != null) {
-          addInvoiceReportData(invoiceReports);
           final dateFormat = DateFormatVN.formatDateDDMM("${dateString}");
           chartData[dateFormat] = invoiceReports;
         }
       }
-
-      if (data.isNotEmpty) {
-        this.data = data;
-        notifyListeners();
-
-        setState(ViewStatus.Completed);
-      } else {
-        setState(ViewStatus.Error, 'Invoice list not found');
-      }
+      setMinMaxInvoices(getMinTotalInvoicesInDate().toDouble(),
+          getMaxTotalInvoicesInDate().toDouble());
+      setState(ViewStatus.Completed);
+      notifyListeners();
     } catch (e) {
       setState(ViewStatus.Error, 'Failed to load invoice list');
     }
   }
 
-  void addInvoiceReportData(InvoiceReport invoiceReports) {
-    data.add(invoiceReports.totalInvoiceReportInDate.toString());
-  }
-
-  Future<void> getInvoiceReportByOrganization(
-      {DateTime? fromDate,
-      DateTime? toDate,
-      String errorMessage = 'Failed to load invoice list',
-      Duration delay = const Duration(seconds: 1)}) async {
+  Future<void> getInvoiceReportByOrganization({
+    DateTime? fromDate,
+    DateTime? toDate,
+    String errorMessage = 'Failed to load invoice list',
+  }) async {
     try {
       setState(ViewStatus.Loading);
-      await Future.delayed(delay);
-
+      await Future.delayed(const Duration(seconds: 1));
       if (_accountViewModel.account?.role == 2) {
         invoicetTotalReports = await OrganizationAPI()
             .getInvoiceReportByOrganization(fromDate, toDate);
         if (invoicetTotalReports != null) {
-          setMinMaxInvoices(getMinTotalInvoicesInDate().toDouble(),
-              getMaxTotalInvoicesInDate().toDouble());
-          notifyListeners();
           setState(ViewStatus.Completed);
+          notifyListeners();
         } else {
           setState(ViewStatus.Error, 'Invoice list not found');
         }
@@ -142,7 +115,7 @@ class DashboardInvoiceViewModel extends BaseViewModel {
     }
   }
 
-  int getMaxTotalInvoicesInDate() {
+  double getMaxTotalInvoicesInDate() {
     int max = 0;
     for (var entry in chartData.entries) {
       if (entry.value != null) {
@@ -152,10 +125,10 @@ class DashboardInvoiceViewModel extends BaseViewModel {
         }
       }
     }
-    return max;
+    return max.toDouble();
   }
 
-  int getMinTotalInvoicesInDate() {
+  double getMinTotalInvoicesInDate() {
     int min = 0;
     for (var entry in chartData.entries) {
       if (entry.value != null) {
@@ -165,6 +138,6 @@ class DashboardInvoiceViewModel extends BaseViewModel {
         }
       }
     }
-    return min;
+    return min.toDouble();
   }
 }

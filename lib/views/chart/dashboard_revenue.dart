@@ -6,7 +6,6 @@ import 'package:scoped_model/scoped_model.dart';
 
 import '../../enums/view_status.dart';
 import '../../utils/theme.dart';
-import '../../widgets/dashboard/custom_info_box.dart';
 import '../../widgets/dashboard/status_card.dart';
 
 class DashboardRevenue extends StatefulWidget {
@@ -21,12 +20,11 @@ class _DashboardRevenueState extends State<DashboardRevenue> {
       Get.find<DashboardRevenueViewModel>();
 
   Map<String, int> dataRequest = {
-    'Hôm qua': 1,
+    'Hôm qua': 2,
     '3 ngày gần nhất': 3,
     '5 ngày gần nhất': 5,
     'Tuần này': 7,
   };
-
   @override
   void initState() {
     super.initState();
@@ -121,32 +119,22 @@ class _DashboardRevenueState extends State<DashboardRevenue> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16.0),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    CustomInfoBox(
-                                      title: 'Tổng doanh thu',
-                                      value: model.revenueTotalReports!
-                                          .totalInvoiceReport
-                                          .toString(),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    CustomInfoBox(
-                                      title: 'Doanh thu trong ngày',
-                                      value: model.revenueTotalReports!
-                                          .totalInvoiceReportInDate
-                                          .toString(),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                            // const SizedBox(height: 16.0),
+                            // Row(
+                            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            //   children: [
+                            //     Row(
+                            //       children: [
+                            //         CustomInfoBox(
+                            //           title: 'Tổng trong ngày',
+                            //           value: model.revenueTotalReports!
+                            //               .totalInvoiceReportInDate
+                            //               .toString(),
+                            //         ),
+                            //       ],
+                            //     ),
+                            //   ],
+                            // ),
                             SizedBox(height: 16.0),
                             Wrap(
                               spacing: 30.0,
@@ -154,45 +142,45 @@ class _DashboardRevenueState extends State<DashboardRevenue> {
                               alignment: WrapAlignment.center,
                               children: [
                                 StatusCardRevenue(
-                                  width: 100,
+                                  width: 150,
                                   height: 100,
-                                  title: 'Thuế',
+                                  title: 'Tổng thuế giao dịch',
                                   value: model.revenueTotalReports
-                                          ?.totalTaxAmountReport ??
+                                          ?.totalAmountReport ??
                                       0,
-                                  color: getBorderColor(3),
+                                  color: ThemeColor.red,
                                 ),
                                 StatusCardRevenue(
-                                  width: 100,
+                                  width: 150,
                                   height: 100,
-                                  title: 'Tổng tiền sau thuế',
+                                  title: 'Tổng sau thuế',
                                   value: model.revenueTotalReports
                                           ?.totalAmountAfterTaxReport ??
                                       0,
-                                  color: getBorderColor(4),
+                                  color: ThemeColor.blue,
                                 ),
                                 StatusCardRevenue(
-                                  width: 100,
+                                  width: 150,
                                   height: 100,
                                   title: 'Tổng giảm giá',
                                   value: model.revenueTotalReports
                                           ?.totalDiscountAmountReport ??
                                       0,
-                                  color: getBorderColor(5),
+                                  color: ThemeColor.primary,
                                 ),
                                 StatusCardRevenue(
-                                  width: 100,
+                                  width: 150,
                                   height: 100,
-                                  title: 'Tổng tiền không bao gồm thuế',
+                                  title: 'Tổng trước thuế',
                                   value: model.revenueTotalReports
                                           ?.totalAmountWithoutTaxReport ??
                                       0,
-                                  color: getBorderColor(6),
+                                  color: ThemeColor.grey,
                                 ),
                                 StatusCardRevenue(
-                                  width: 100,
+                                  width: 150,
                                   height: 100,
-                                  title: 'Tổng tiền',
+                                  title: 'Tổng',
                                   value: model.revenueTotalReports
                                           ?.totalAmountReport ??
                                       0,
@@ -221,6 +209,14 @@ class _DashboardRevenueState extends State<DashboardRevenue> {
                               child: ScopedModelDescendant<
                                   DashboardRevenueViewModel>(
                                 builder: (context, child, model) {
+                                  // In ra giá trị maxRevenue, minRevenue và chartData
+                                  print('Max Revenue: ${model.maxRevenue}');
+                                  print('Min Revenue: ${model.minRevenue}');
+                                  model.chartData.forEach((key, value) {
+                                    print(
+                                        'Key: $key, Value: ${value?.totalAmountReport?.toDouble()}');
+                                  });
+
                                   if (model.status == ViewStatus.Empty) {
                                     return const Center(
                                       child: Text(
@@ -246,6 +242,19 @@ class _DashboardRevenueState extends State<DashboardRevenue> {
                                       ),
                                     );
                                   } else {
+                                    // Kiểm tra và xử lý giá trị bằng 0
+                                    double yMax = (model.maxRevenue ?? 0) ==
+                                            (model.minRevenue ?? 0)
+                                        ? (model.maxRevenue ?? 0) + 1
+                                        : (model.maxRevenue ?? 0);
+                                    double yMin = model.minRevenue ?? 0;
+                                    double yFrequency = (yMax + yMin) / 2;
+
+                                    if (yMax == 0 && yMin == 0) {
+                                      yMax = 1000;
+                                      yFrequency = 100;
+                                    }
+
                                     return SizedBox(
                                       height:
                                           MediaQuery.of(context).size.height *
@@ -270,11 +279,9 @@ class _DashboardRevenueState extends State<DashboardRevenue> {
                                                 ),
                                               ),
                                               y: ChartAxisSettingsAxis(
-                                                frequency: (model.maxRevenue +
-                                                        model.minRevenue) /
-                                                    3,
-                                                max: model.maxRevenue,
-                                                min: model.minRevenue,
+                                                frequency: yFrequency,
+                                                max: yMax,
+                                                min: yMin,
                                                 textStyle: TextStyle(
                                                   color: Colors.black
                                                       .withOpacity(0.6),
@@ -293,15 +300,16 @@ class _DashboardRevenueState extends State<DashboardRevenue> {
                                               model.chartData.length,
                                               (index) => ChartLineDataItem(
                                                 value: model.chartData.values
-                                                    .toList()[index]!
-                                                    .totalInvoiceReportInDate!
-                                                    .toDouble(),
+                                                        .toList()[index]
+                                                        ?.totalAmountReport
+                                                        ?.toDouble() ??
+                                                    0.0,
                                                 x: index.toDouble(),
                                               ),
                                             ),
                                             settings: const ChartLineSettings(
                                               thickness: 2.0,
-                                              color: Colors.blue,
+                                              color: Colors.red,
                                             ),
                                           ),
                                         ],

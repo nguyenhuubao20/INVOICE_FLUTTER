@@ -80,6 +80,16 @@ class InvoicePaymentReport {
     this.totalAmountReport,
   });
 
+  InvoicePaymentReport.empty()
+      : totalInvoiceReport = 0,
+        totalInvoiceReportInDate = 0,
+        totalTaxAmountReport = 0.0,
+        totalAmountAfterTaxReport = 0.0,
+        totalSaleAmountReport = 0.0,
+        totalDiscountAmountReport = 0.0,
+        totalAmountWithoutTaxReport = 0.0,
+        totalAmountReport = 0.0;
+
   factory InvoicePaymentReport.fromJson(Map<String, dynamic> json) {
     return InvoicePaymentReport(
       totalInvoiceReport: json['totalInvoiceReport'],

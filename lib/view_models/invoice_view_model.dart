@@ -10,6 +10,8 @@ import 'package:invoice/widgets/other_dialogs/dialog.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../api/invoice_api.dart';
+import '../models/organization.dart';
+import '../models/store.dart';
 import '../utils/string_constrant.dart';
 
 class InvoiceViewModel extends BaseViewModel {
@@ -28,7 +30,7 @@ class InvoiceViewModel extends BaseViewModel {
   DateTime? selectedDate;
 
   String? selectedStoreNameStr;
-  String? selectedStatusStr;
+  String? selectedStatusStr = 'Tất cả';
   String? selectedDateStr;
   String? searchName;
   String? selectedStoreId;
@@ -40,13 +42,29 @@ class InvoiceViewModel extends BaseViewModel {
 
   final AccountViewModel _accountViewModel = Get.find<AccountViewModel>();
   String? errorMessage;
-  final RefreshController refreshController = RefreshController();
-
+  final RefreshController refreshController =
+      RefreshController(initialRefresh: true);
   int currentPage = 1;
   int totalPage = 0;
 
   Future<void> loadTotalPage(int t) async {
     totalPage = t;
+  }
+
+  void handleSelectedItem(dynamic selectedItem) {
+    if (selectedItem is Store) {
+      setStore(selectedItem.id, selectedItem.name);
+    } else if (selectedItem is Organization) {
+      setOrganization(selectedItem.id, selectedItem.name);
+    }
+    setInvoiceToDisplayed();
+    // notifyListeners();
+  }
+
+  void setInvoiceToDisplayed() {
+    loadInvoice();
+    refreshController.requestRefresh();
+    // notifyListeners();
   }
 
   void setStore(String? id, String? name) {
@@ -82,7 +100,7 @@ class InvoiceViewModel extends BaseViewModel {
     notifyListeners();
   }
 
-  void removeAll() {
+  Future<void> removeAll() async {
     selectedDate = null;
     selectedStoreNameStr = null;
     selectedOrganizationId = null;
@@ -92,7 +110,29 @@ class InvoiceViewModel extends BaseViewModel {
     searchName = null;
     selectedStoreId = null;
     selectedStatusIndex = null;
-    notifyListeners();
+    _invoiceList.clear();
+    invoiceDetail?.clear();
+    invoiceStatus.clear();
+  }
+
+  Future<void> onRefresh() async {
+    final result = await loadInvoice(
+      isRefresh: true,
+    );
+    if (result) {
+      refreshController.refreshCompleted();
+    } else {
+      refreshController.refreshFailed();
+    }
+  }
+
+  Future<void> onLoading() async {
+    final result = await loadInvoice();
+    if (result) {
+      refreshController.loadComplete();
+    } else {
+      refreshController.loadNoData();
+    }
   }
 
   String? convertDateTimeToString(DateTime? dateTime) {
@@ -104,6 +144,7 @@ class InvoiceViewModel extends BaseViewModel {
 
   Future<bool> loadInvoice({bool isRefresh = false}) async {
     try {
+      await Future.delayed(const Duration(seconds: 1));
       int selectedStatusIndex = invoiceStatusFromString(selectedStatusStr);
       String? selectedDateStr = convertDateTimeToString(selectedDate);
       if (isRefresh) {
@@ -112,6 +153,7 @@ class InvoiceViewModel extends BaseViewModel {
         if (currentPage > totalPage) {
           refreshController.loadNoData();
           notifyListeners();
+          setState(ViewStatus.Completed);
           return false;
         }
       }
@@ -150,14 +192,17 @@ class InvoiceViewModel extends BaseViewModel {
       if (invoiceResponse != null &&
           invoiceResponse.items != null &&
           invoiceResponse.items!.isNotEmpty) {
+        List<Invoice> invoiceListToGet = List.from(invoiceResponse.items!)
+          ..sort((a, b) => b.createdDate!.compareTo(a.createdDate!));
+
         loadTotalPage(invoiceResponse.totalPages ?? 0);
         currentPage++;
         if (isRefresh) {
-          _invoiceList = invoiceResponse.items!;
+          _invoiceList = invoiceListToGet;
         } else {
-          _invoiceList.addAll(invoiceResponse.items!);
+          _invoiceList.addAll(invoiceListToGet);
         }
-        _invoiceList.sort((a, b) => b.createdDate!.compareTo(a.createdDate!));
+        refreshController.loadComplete();
         setState(ViewStatus.Completed);
         notifyListeners();
         return true;

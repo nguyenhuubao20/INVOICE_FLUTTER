@@ -3,14 +3,14 @@ import 'package:invoice/models/account.dart';
 import 'package:invoice/utils/request.dart';
 import 'package:invoice/utils/share_pref.dart';
 import 'package:invoice/view_models/base_view_model.dart';
-import 'package:invoice/view_models/invoice_view_model.dart';
-import 'package:invoice/view_models/startup_view_model.dart';
 
 import '../api/account_api.dart';
 import '../enums/view_status.dart';
 import '../utils/route_constrant.dart';
 import '../widgets/other_dialogs/dialog.dart';
+import 'invoice_view_model.dart';
 import 'organization_view_model.dart';
+import 'startup_view_model.dart';
 
 class AccountViewModel extends BaseViewModel {
   AccountAPI accountAPI = AccountAPI();
@@ -76,7 +76,7 @@ class AccountViewModel extends BaseViewModel {
       account = null;
       await removeALL();
       await Get.find<StartUpViewModel>().handleStartUpLogic();
-      Get.find<InvoiceViewModel>().removeAll();
+      await Get.find<InvoiceViewModel>().removeAll();
       hideDialog();
     }
   }

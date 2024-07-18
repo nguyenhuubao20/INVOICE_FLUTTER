@@ -1,5 +1,4 @@
 import 'package:invoice/models/invoice.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../models/invoice_history_partner.dart';
 import '../utils/request.dart';
@@ -10,7 +9,6 @@ class InvoiceAPI {
   int page = 1;
 
   List<Invoice> invoiceList = [];
-  RefreshController refreshController = RefreshController(initialRefresh: true);
 
   Future<InvoiceResponse?> getInvoicesBySystemAdmin(int currentPage) async {
     try {

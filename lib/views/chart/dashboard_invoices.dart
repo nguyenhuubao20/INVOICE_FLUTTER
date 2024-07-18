@@ -250,6 +250,13 @@ class _DashboardInvoicesState extends State<DashboardInvoices> {
                               child: ScopedModelDescendant<
                                   DashboardInvoiceViewModel>(
                                 builder: (context, child, model) {
+                                  // In ra giá trị maxInvoices, minInvoices và chartData
+                                  // print('Max Invoices: ${model.maxInvoices}');
+                                  // print('Min Invoices: ${model.minInvoices}');
+                                  // model.chartData.forEach((key, value) {
+                                  //   print(
+                                  //       'Key: $key, Value: ${value?.totalInvoiceReportInDate?.toDouble()}');
+                                  // });
                                   if (model.status == ViewStatus.Empty) {
                                     return const Center(
                                       child: Text(
@@ -275,6 +282,19 @@ class _DashboardInvoicesState extends State<DashboardInvoices> {
                                       ),
                                     );
                                   } else {
+                                    // Kiểm tra và xử lý giá trị bằng 0
+                                    double yMax = (model.maxInvoices ?? 0) ==
+                                            (model.minInvoices ?? 0)
+                                        ? (model.maxInvoices ?? 0) + 1
+                                        : (model.maxInvoices ?? 0);
+                                    double yMin = model.minInvoices ?? 0;
+                                    double yFrequency = (yMax + yMin) / 2;
+
+                                    if (yMax == 0 && yMin == 0) {
+                                      yMax = 1;
+                                      yFrequency = 1;
+                                    }
+
                                     return SizedBox(
                                       height:
                                           MediaQuery.of(context).size.height *
@@ -299,11 +319,9 @@ class _DashboardInvoicesState extends State<DashboardInvoices> {
                                                 ),
                                               ),
                                               y: ChartAxisSettingsAxis(
-                                                frequency: (model.maxInvoices +
-                                                        model.minInvoices) /
-                                                    4,
-                                                max: model.maxInvoices,
-                                                min: model.minInvoices,
+                                                frequency: yFrequency,
+                                                max: yMax,
+                                                min: yMin,
                                                 textStyle: TextStyle(
                                                   color: Colors.black
                                                       .withOpacity(0.6),
@@ -322,9 +340,10 @@ class _DashboardInvoicesState extends State<DashboardInvoices> {
                                               model.chartData.length,
                                               (index) => ChartLineDataItem(
                                                 value: model.chartData.values
-                                                    .toList()[index]!
-                                                    .totalInvoiceReportInDate!
-                                                    .toDouble(),
+                                                        .toList()[index]
+                                                        ?.totalInvoiceReportInDate
+                                                        ?.toDouble() ??
+                                                    0.0,
                                                 x: index.toDouble(),
                                               ),
                                             ),

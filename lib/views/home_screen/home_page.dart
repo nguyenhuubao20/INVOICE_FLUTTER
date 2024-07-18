@@ -4,8 +4,6 @@ import 'package:horizontal_week_calendar/horizontal_week_calendar.dart';
 import 'package:invoice/enums/date_format.dart';
 import 'package:invoice/enums/view_status.dart';
 import 'package:invoice/models/account.dart';
-import 'package:invoice/models/invoice.dart';
-import 'package:invoice/models/organization.dart';
 import 'package:invoice/utils/route_constrant.dart';
 import 'package:invoice/utils/theme.dart';
 import 'package:invoice/view_models/invoice_view_model.dart';
@@ -17,7 +15,6 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../../enums/invoice_status.dart';
 import '../../models/invoice_dashboard.dart';
-import '../../models/store.dart';
 import '../../view_models/account_view_model.dart';
 import '../../widgets/other_dialogs/dialog.dart';
 import '../../widgets/other_dialogs/store_list_bottom_sheet.dart';
@@ -30,18 +27,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final RefreshController refreshController =
-      RefreshController(initialRefresh: true);
   TextEditingController _searchController = TextEditingController();
 
   int selectedMenu = 0;
-  List<Invoice>? displayedInvoices = [];
   late InvoiceReport? invoiceReports;
   Account? account;
   final AccountViewModel _accountViewModel = Get.find<AccountViewModel>();
   final InvoiceViewModel _invoiceViewModel = Get.find<InvoiceViewModel>();
-  final OrganizationViewModel _organizationViewModel =
-      Get.find<OrganizationViewModel>();
   String? selectedStoreId;
   String? selectedStoreStr;
   String? selectedOrganizationId;
@@ -49,12 +41,9 @@ class _HomePageState extends State<HomePage> {
   DateTime? selectedDate;
   String? selectedDateStr;
   List<dynamic>? dataList;
-  late int? _selectedStatusIndex = -1;
-  late String? _selectedStatus = null;
-  late String selectedname = '';
   late DateTime minDate;
   late DateTime maxDate;
-  bool isLoading = false;
+  String? selectedStatus;
 
   @override
   void initState() {
@@ -64,61 +53,14 @@ class _HomePageState extends State<HomePage> {
     final now = tz.TZDateTime.now(vietnam);
     minDate = DateTime(now.year - 1, now.month, now.day);
     maxDate = DateTime(now.year + 1, now.month, now.day);
-    _invoiceViewModel.loadInvoice();
+    selectedStatus = _invoiceViewModel.selectedStatusStr;
   }
 
   @override
   void dispose() {
+    // _invoiceViewModel.refreshController.dispose();
     _searchController.dispose();
-    refreshController.dispose();
     super.dispose();
-  }
-
-  void setInvoiceToDisplayed() {
-    setState(() {
-      _invoiceViewModel.loadInvoice();
-    });
-    refreshController.requestRefresh();
-  }
-
-  void handleSelectedItem(dynamic selectedItem) {
-    setState(() {
-      if (selectedItem is Store) {
-        selectedStoreId = selectedItem.id!;
-        selectedStoreStr = selectedItem.name!;
-        _invoiceViewModel.setStore(selectedStoreId, selectedStoreStr);
-      } else if (selectedItem is Organization) {
-        selectedOrganizationId = selectedItem.id!;
-        selectedOrganizationStr = selectedItem.name!;
-        _invoiceViewModel.setOrganization(
-            selectedOrganizationId, selectedOrganizationStr);
-      }
-      setInvoiceToDisplayed();
-    });
-  }
-
-  void _onRefresh() async {
-    final result = await _invoiceViewModel.loadInvoice(
-      isRefresh: true,
-    );
-    if (result) {
-      refreshController.refreshCompleted();
-    } else {
-      refreshController.refreshFailed();
-    }
-  }
-
-  void _onLoading() async {
-    final result = await _invoiceViewModel.loadInvoice();
-    if (result) {
-      refreshController.loadComplete();
-    } else {
-      refreshController.loadFailed();
-    }
-  }
-
-  void triggerRefresh() {
-    _onRefresh();
   }
 
   @override
@@ -141,7 +83,7 @@ class _HomePageState extends State<HomePage> {
             color: Colors.white,
             onPressed: () {
               _invoiceViewModel.removeAll();
-              setInvoiceToDisplayed();
+              _invoiceViewModel.setInvoiceToDisplayed();
             },
           ),
           // IconButton(
@@ -161,116 +103,133 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: CustomScrollView(
           slivers: <Widget>[
-            SliverAppBar(
-              elevation: 0,
-              backgroundColor: Color(0xff549FFD),
-              automaticallyImplyLeading: false,
-              pinned: true,
-              floating: false,
-              title: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8.0, horizontal: 16.0),
+            ScopedModel(
+              model: _invoiceViewModel,
+              child: ScopedModelDescendant<InvoiceViewModel>(
+                builder: (context, child, model) {
+                  return SliverAppBar(
+                    elevation: 0,
+                    backgroundColor: Color(0xff549FFD),
+                    automaticallyImplyLeading: false,
+                    pinned: true,
+                    floating: false,
+                    title: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(Icons.store, color: Color(0xff549FFD)),
-                          const SizedBox(width: 8.0),
-                          Text(
-                            'Cửa hàng',
-                            style: TextStyle(
-                              fontSize: 16.0,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.bold,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8.0, horizontal: 16.0),
+                            child: Row(
+                              children: [
+                                Icon(Icons.store, color: Color(0xff549FFD)),
+                                const SizedBox(width: 8.0),
+                                Text(
+                                  'Cửa hàng',
+                                  style: TextStyle(
+                                    fontSize: 16.0,
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: InkWell(
+                              onTap: () {
+                                showBottomSheet(
+                                  backgroundColor: Colors.white,
+                                  context: context,
+                                  builder: (BuildContext context) =>
+                                      ScopedModel<OrganizationViewModel>(
+                                    model: Get.find<OrganizationViewModel>(),
+                                    child: ScopedModelDescendant<
+                                        OrganizationViewModel>(
+                                      builder: (context, child, model) {
+                                        if (model.status ==
+                                            ViewStatus.Completed) {
+                                          if (_accountViewModel.account!.role ==
+                                              2) {
+                                            dataList = model.storeList;
+                                          } else {
+                                            dataList = model.organizationList;
+                                          }
+                                          return SizedBox(
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                0.5,
+                                            child: StoreListBottomSheet(
+                                              dataList: dataList ?? [],
+                                              onSelectItem: _invoiceViewModel
+                                                  .handleSelectedItem,
+                                            ),
+                                          );
+                                        }
+                                        return Container();
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8.0, horizontal: 16.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      _accountViewModel.account!.role == 2
+                                          ? _invoiceViewModel
+                                                  .selectedStoreNameStr ??
+                                              'Chọn cửa hàng'
+                                          : _invoiceViewModel
+                                                  .selectedOrganizationNameStr ??
+                                              'Chọn tổ chức',
+                                      style: const TextStyle(
+                                        fontSize: 16.0,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    InkWell(
+                                      onTap: () {
+                                        if (_invoiceViewModel
+                                                .selectedStoreNameStr !=
+                                            null) {
+                                          _invoiceViewModel.resetStore();
+                                          _invoiceViewModel
+                                              .setInvoiceToDisplayed();
+                                        }
+                                      },
+                                      child: Icon(
+                                        _invoiceViewModel
+                                                    .selectedStoreNameStr ==
+                                                null
+                                            ? Icons.arrow_drop_down
+                                            : Icons.close,
+                                        color: Colors.black,
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: InkWell(
-                        onTap: () {
-                          showBottomSheet(
-                            backgroundColor: Colors.white,
-                            context: context,
-                            builder: (BuildContext context) =>
-                                ScopedModel<OrganizationViewModel>(
-                              model: Get.find<OrganizationViewModel>(),
-                              child:
-                                  ScopedModelDescendant<OrganizationViewModel>(
-                                builder: (context, child, model) {
-                                  if (model.status == ViewStatus.Completed) {
-                                    if (_accountViewModel.account!.role == 2) {
-                                      dataList = model.storeList;
-                                    } else {
-                                      dataList = model.organizationList;
-                                    }
-                                    return SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height *
-                                              0.5,
-                                      child: StoreListBottomSheet(
-                                        dataList: dataList ?? [],
-                                        onSelectItem: handleSelectedItem,
-                                      ),
-                                    );
-                                  }
-                                  return Container();
-                                },
-                              ),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 8.0, horizontal: 16.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                _accountViewModel.account!.role == 2
-                                    ? _invoiceViewModel.selectedStoreNameStr ??
-                                        'Chọn cửa hàng'
-                                    : _invoiceViewModel
-                                            .selectedOrganizationNameStr ??
-                                        'Chọn tổ chức',
-                                style: const TextStyle(
-                                  fontSize: 16.0,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              InkWell(
-                                onTap: () {
-                                  if (_invoiceViewModel.selectedStoreNameStr !=
-                                      null) {
-                                    _invoiceViewModel.resetStore();
-                                    setInvoiceToDisplayed();
-                                  }
-                                },
-                                child: Icon(
-                                  _invoiceViewModel.selectedStoreNameStr == null
-                                      ? Icons.arrow_drop_down
-                                      : Icons.close,
-                                  color: Colors.black,
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
             SliverToBoxAdapter(
@@ -289,7 +248,7 @@ class _HomePageState extends State<HomePage> {
                           : DateTime.now(),
                       onDateChange: (date) {
                         _invoiceViewModel.setSelectedDate(date);
-                        setInvoiceToDisplayed();
+                        _invoiceViewModel.setInvoiceToDisplayed();
                       },
                       showTopNavbar: true,
                       monthFormat: "MMMM yyyy",
@@ -338,7 +297,7 @@ class _HomePageState extends State<HomePage> {
                               controller: _searchController,
                               onFieldSubmitted: (value) {
                                 _invoiceViewModel.setSearchedName(value);
-                                setInvoiceToDisplayed();
+                                _invoiceViewModel.setInvoiceToDisplayed();
                               },
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
@@ -358,16 +317,19 @@ class _HomePageState extends State<HomePage> {
                               children: [
                                 Container(
                                   child: DropdownButtonFormField<String>(
-                                    value: _invoiceViewModel.selectedStatusStr,
+                                    value: selectedStatus,
                                     hint: Text(''),
                                     icon: Icon(Icons.filter_list),
                                     iconSize: 24,
                                     isExpanded: true,
                                     isDense: true,
                                     onChanged: (String? newValue) {
+                                      setState(() {
+                                        selectedStatus = newValue;
+                                      });
                                       _invoiceViewModel
                                           .setSelectedStatus(newValue);
-                                      setInvoiceToDisplayed();
+                                      _invoiceViewModel.setInvoiceToDisplayed();
                                     },
                                     decoration: InputDecoration(
                                       labelText: 'Trạng thái',
@@ -395,9 +357,7 @@ class _HomePageState extends State<HomePage> {
                                           child: Text(
                                             value,
                                             style: TextStyle(
-                                              color: _invoiceViewModel
-                                                          .selectedStatusStr ==
-                                                      value
+                                              color: selectedStatus == value
                                                   ? ThemeColor.blue
                                                   : ThemeColor.black,
                                             ),
@@ -418,22 +378,50 @@ class _HomePageState extends State<HomePage> {
                       model: _invoiceViewModel,
                       child: ScopedModelDescendant<InvoiceViewModel>(
                         builder: (context, child, model) {
-                          return Container(
-                            margin: EdgeInsets.only(top: 5.0),
-                            child: SizedBox(
-                              height: MediaQuery.of(context).size.height * 0.5,
-                              child: SmartRefresher(
-                                enablePullUp: true,
-                                onRefresh: _onRefresh,
-                                onLoading: _onLoading,
-                                controller: refreshController,
-                                child: _buildContent(model, this),
-                              ),
-                            ),
-                          );
+                          switch (model.status) {
+                            case ViewStatus.Error:
+                              return const Center(
+                                child: Text(
+                                  'Đã xảy ra lỗi! Vui lòng thử lại sau.',
+                                  style: TextStyle(color: Color(0xff549FFD)),
+                                ),
+                              );
+                            case ViewStatus.Empty:
+                              return const Center(
+                                child: Text(
+                                  'Hiện không có hóa đơn! Vui lòng thử lại sau.',
+                                  style: TextStyle(color: Color(0xff549FFD)),
+                                ),
+                              );
+                            case ViewStatus.Loading:
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Color(0xff549FFD)),
+                                ),
+                              );
+                            case ViewStatus.Completed:
+                              return Container(
+                                margin: EdgeInsets.only(top: 5.0),
+                                child: SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.5,
+                                  child: SmartRefresher(
+                                    enablePullUp: true,
+                                    onRefresh: _invoiceViewModel.onRefresh,
+                                    onLoading: _invoiceViewModel.onLoading,
+                                    controller:
+                                        _invoiceViewModel.refreshController,
+                                    child: _buildContent(model, this),
+                                  ),
+                                ),
+                              );
+                            default:
+                              return SizedBox.shrink();
+                          }
                         },
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -446,170 +434,147 @@ class _HomePageState extends State<HomePage> {
 }
 
 Widget _buildContent(InvoiceViewModel model, _HomePageState state) {
-  if (model.status == ViewStatus.Error) {
-    return const Center(
-      child: Text(
-        'Đã xảy ra lỗi! Vui lòng thử lại sau.',
-        style: TextStyle(color: Color(0xff549FFD)),
-      ),
-    );
-  } else if (model.status == ViewStatus.Empty) {
-    return const Center(
-      child: Text(
-        'Hiện không có hóa đơn! Vui lòng thử lại sau.',
-        style: TextStyle(color: Color(0xff549FFD)),
-      ),
-    );
-  } else if (model.status == ViewStatus.Completed) {
-    return ListView.builder(
-      itemCount: model.invoiceList.length,
-      itemBuilder: (context, index) {
-        var displayedInvoices = model.invoiceList[index];
-        return InkWell(
-          child: Container(
-            margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-            padding: EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
-                  spreadRadius: 1,
-                  blurRadius: 5,
-                  offset: Offset(0, 3),
+  return ListView.builder(
+    itemCount: model.invoiceList.length,
+    itemBuilder: (context, index) {
+      var displayedInvoices = model.invoiceList[index];
+      return InkWell(
+        child: Container(
+          margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+          padding: EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 1,
+                blurRadius: 5,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              ListTile(
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '# ${displayedInvoices.invoiceCode}',
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.info_outline, size: 20),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Mã hóa đơn'),
+                              content: SelectableText(
+                                  displayedInvoices.invoiceCode.toString()),
+                              actions: <Widget>[
+                                TextButton(
+                                  child: Text('Đóng'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Column(
-              children: [
-                ListTile(
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          '# ${displayedInvoices.invoiceCode}',
+                subtitle: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildRowWithIcon(
+                            Icons.code_off,
+                            '${displayedInvoices.lookupCode ?? ''}',
+                            Colors.grey),
+                        _buildRowWithIcon(Icons.payment,
+                            '${displayedInvoices.paymentMethod}', Colors.grey),
+                        Text(
+                          invoiceStatusFromInt(displayedInvoices.status),
                           style: TextStyle(
-                            fontSize: 16.0,
-                            color: Colors.black,
+                            fontSize: 17.0,
+                            color: getStatusColor(displayedInvoices.status),
                             fontWeight: FontWeight.bold,
                           ),
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.info_outline, size: 20),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text('Mã hóa đơn'),
-                                content: SelectableText(
-                                    displayedInvoices.invoiceCode.toString()),
-                                actions: <Widget>[
-                                  TextButton(
-                                    child: Text('Đóng'),
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  subtitle: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildRowWithIcon(
-                              Icons.code_off,
-                              '${displayedInvoices.lookupCode ?? ''}',
-                              Colors.grey),
-                          _buildRowWithIcon(
-                              Icons.payment,
-                              '${displayedInvoices.paymentMethod}',
-                              Colors.grey),
-                          Text(
-                            invoiceStatusFromInt(displayedInvoices.status),
-                            style: TextStyle(
-                              fontSize: 17.0,
-                              color: getStatusColor(displayedInvoices.status),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          _buildRowWithIcon(
-                              Icons.access_time,
-                              '${DateFormatVN.formatTime(displayedInvoices.createdDate!)}',
-                              Colors.grey),
-                          _buildRowWithIcon(
-                              Icons.calendar_month,
-                              '${DateFormatVN.formatDate(displayedInvoices.createdDate!)}',
-                              Colors.grey),
-                          _buildRowWithIcon(
-                              null,
-                              'Tổng: ${displayedInvoices.totalAmount}',
-                              Colors.black),
-                        ],
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        _buildRowWithIcon(
+                            Icons.access_time,
+                            '${DateFormatVN.formatTime(displayedInvoices.createdDate!)}',
+                            Colors.grey),
+                        _buildRowWithIcon(
+                            Icons.calendar_month,
+                            '${DateFormatVN.formatDate(displayedInvoices.createdDate!)}',
+                            Colors.grey),
+                        _buildRowWithIcon(
+                            null,
+                            'Tổng: ${displayedInvoices.totalAmount}',
+                            Colors.black),
+                      ],
+                    ),
+                  ],
                 ),
-                SizedBox(height: 8),
-                if (displayedInvoices.status == 0)
-                  Column(
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            bool confirmed = await showConfirmDialog(
-                              title: 'Hóa đơn phê duyệt',
-                              content:
-                                  'Bạn có muốn phê duyệt hóa đơn này không?',
-                              confirmText: 'Có',
-                            );
-                            if (confirmed) {
-                              model.approvalInvoice(
-                                  model.invoiceList[index].id!);
-                            } else {}
-                          },
-                          child: Text(
-                            'Chờ phê duyệt',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          style: ButtonStyle(
-                            backgroundColor:
-                                WidgetStateProperty.all(Colors.blue),
-                          ),
+              ),
+              SizedBox(height: 8),
+              if (displayedInvoices.status == 0)
+                Column(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          bool confirmed = await showConfirmDialog(
+                            title: 'Hóa đơn phê duyệt',
+                            content: 'Bạn có muốn phê duyệt hóa đơn này không?',
+                            confirmText: 'Có',
+                          );
+                          if (confirmed) {
+                            model.approvalInvoice(model.invoiceList[index].id!);
+                          } else {}
+                        },
+                        child: Text(
+                          'Chờ phê duyệt',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStateProperty.all(Colors.blue),
                         ),
                       ),
-                    ],
-                  )
-              ],
-            ),
+                    ),
+                  ],
+                )
+            ],
           ),
-          onTap: () => Get.toNamed(
-            '${RouteHandler.INVOICE_DETAIL}?id=${displayedInvoices.id}',
-          ),
-        );
-      },
-    );
-  } else {
-    return Container();
-  }
+        ),
+        onTap: () => Get.toNamed(
+          '${RouteHandler.INVOICE_DETAIL}?id=${displayedInvoices.id}',
+        ),
+      );
+    },
+  );
 }
 
 Widget buildGreeting(AccountViewModel _accountViewModel) {

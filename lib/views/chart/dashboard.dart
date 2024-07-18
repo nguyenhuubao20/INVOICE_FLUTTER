@@ -14,16 +14,24 @@ class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2, // Number of tabs
+      length: 2,
       child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: Text('Thống Kê'),
-          bottom: TabBar(
-            tabs: [
-              Tab(text: 'Số lượng hóa đơn'),
-              Tab(text: 'Số tiền giao dịch'),
-            ],
+        appBar: PreferredSize(
+          preferredSize: MediaQuery.of(context).size * 0.1,
+          child: AppBar(
+            backgroundColor: Color(0xff549FFD),
+            automaticallyImplyLeading: false,
+            bottom: TabBar(
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white.withOpacity(0.6),
+              labelPadding: EdgeInsets.symmetric(horizontal: 16.0),
+              tabs: [
+                Tab(
+                    text: 'Số lượng hóa đơn',
+                    icon: Icon(Icons.article_outlined)),
+                Tab(text: 'Số tiền giao dịch', icon: Icon(Icons.money_off)),
+              ],
+            ),
           ),
         ),
         body: TabBarView(

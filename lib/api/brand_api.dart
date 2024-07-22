@@ -1,7 +1,10 @@
+import 'package:intl/intl.dart';
 import 'package:invoice/models/brand.dart';
+import 'package:invoice/models/invoice_dashboard.dart';
 import 'package:invoice/models/organization.dart';
 import 'package:invoice/utils/request.dart';
 import 'package:invoice/utils/share_pref.dart';
+import 'package:invoice/utils/string_constrant.dart';
 
 import '../models/store.dart';
 
@@ -102,6 +105,91 @@ class BrandAPI {
     } catch (e) {
       print('Error during get stores: $e');
       return [];
+    }
+  }
+
+  Future<List<InvoicePaymentReport>> getBrandReportRevenue(
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? organizationId,
+  ) async {
+    try {
+      String? brandId = await getBrandId();
+      var params = {
+        'id': brandId,
+      };
+
+      if (organizationId != null) {
+        params['organizationId'] = organizationId;
+      }
+
+      if (fromDate != null) {
+        params['fromDate'] = DateFormat('yyyy-MM-dd').format(fromDate);
+      }
+
+      if (toDate != null) {
+        params['toDate'] = DateFormat('yyyy-MM-dd').format(toDate);
+      }
+
+      final res = await request.get(
+        'brands/$brandId/invoice-payment-report-in-date',
+        queryParameters: params,
+      );
+
+      if (res.statusCode == 200) {
+        Map<String, dynamic> data = res.data;
+        List<dynamic> jsonList = data['items'];
+
+        return jsonList
+            .map((json) => InvoicePaymentReport.fromJson(json))
+            .toList();
+      } else {
+        throw Exception('Error loading invoice payment report');
+      }
+    } catch (e) {
+      throw Exception('Error loading invoice payment report: ${e.toString()}');
+    }
+  }
+
+  Future<List<InvoiceReport>> getBrandReportInvoices(
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? organizationId,
+  ) async {
+    try {
+      String? brandId = await getBrandId();
+      var params = {
+        'id': brandId,
+      };
+
+      if (organizationId != null) {
+        params['organizationId'] = organizationId;
+      }
+
+      if (fromDate != null) {
+        params['fromDate'] = DateFormat('yyyy-MM-dd').format(fromDate);
+      }
+
+      if (toDate != null) {
+        params['toDate'] = DateFormat('yyyy-MM-dd').format(toDate);
+      }
+
+      final res = await request.get(
+        'brands/$brandId/invoice-report-in-date',
+        queryParameters: params,
+      );
+
+      if (res.statusCode == 200) {
+        Map<String, dynamic> data = res.data;
+        List<dynamic> jsonList = data['items'];
+        List<InvoiceReport> reports =
+            jsonList.map((item) => InvoiceReport.fromJson(item)).toList();
+        return reports;
+      } else {
+        throw Exception(Message.errorLoadInvoicePayment);
+      }
+    } catch (e) {
+      throw Exception(Message.errorLoadInvoicePaymentContent + e.toString());
     }
   }
 }

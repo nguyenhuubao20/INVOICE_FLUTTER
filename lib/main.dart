@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:invoice/networking/firebase/firebase_notification.dart';
@@ -63,8 +64,12 @@ class MyApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: themeViewModel.isDarkMode ? ThemeMode.dark : ThemeMode.light,
       supportedLocales: [
-        const Locale('vi', ''),
-        const Locale('en', ''),
+        const Locale('vi', 'VN'),
+      ],
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
       ],
       getPages: [
         GetPage(

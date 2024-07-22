@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:invoice/view_models/dashboard_view_model/dashboard_invoices_view_model.dart';
 import 'package:mrx_charts/mrx_charts.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 import '../../enums/view_status.dart';
-import '../../utils/theme.dart';
-import '../../widgets/dashboard/custom_info_box.dart';
 import '../../widgets/dashboard/status_card.dart';
 
 class DashboardInvoices extends StatefulWidget {
@@ -19,19 +18,36 @@ class DashboardInvoices extends StatefulWidget {
 class _DashboardInvoicesState extends State<DashboardInvoices> {
   final DashboardInvoiceViewModel dashboardViewModel =
       Get.find<DashboardInvoiceViewModel>();
-  Map<String, int> dataRequest = {
-    'Hôm qua': 2,
-    '3 ngày gần nhất': 3,
-    '5 ngày gần nhất': 5,
-    'Tuần này': 7,
-  };
+  DateTime? _fromDate;
+  DateTime? _toDate;
 
   @override
   void initState() {
     super.initState();
-    dashboardViewModel.getLastRequestDays();
-    dashboardViewModel.getInvoiceReporPaymenttByOrganizationDashBoard();
-    dashboardViewModel.getInvoiceReportByOrganization();
+    _fromDate = dashboardViewModel.selectedFromDate;
+    _toDate = dashboardViewModel.selectedToDate;
+    dashboardViewModel.getInvoicesDashboard();
+  }
+
+  Future<void> _selectDate(BuildContext context, bool isFrom) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2025),
+      locale: const Locale('vi', 'VN'),
+    );
+    if (picked != null) {
+      setState(() {
+        if (isFrom) {
+          _fromDate = picked;
+          dashboardViewModel.setSelectedFromDate(_fromDate);
+        } else {
+          _toDate = picked;
+          dashboardViewModel.setSelectedToDate(_toDate);
+        }
+      });
+    }
   }
 
   @override
@@ -57,97 +73,119 @@ class _DashboardInvoicesState extends State<DashboardInvoices> {
                         ),
                         child: Column(
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
+                            Column(
+                              children: [
+                                const Row(
+                                  children: [
+                                    Text(
+                                      "Chọn khoảng thời gian",
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 8.0),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          _selectDate(context, true);
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 12, horizontal: 8),
+                                          decoration: BoxDecoration(
+                                            border:
+                                                Border.all(color: Colors.grey),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.calendar_today,
+                                                  color: Colors.blue),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                _fromDate == null
+                                                    ? 'Từ ngày'
+                                                    : DateFormat('dd/MM/yyyy')
+                                                        .format(_fromDate!),
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Container(
+                                        width: 12,
+                                        height: 1,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          _selectDate(context, false);
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 12, horizontal: 8),
+                                          decoration: BoxDecoration(
+                                            border:
+                                                Border.all(color: Colors.grey),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.calendar_today,
+                                                  color: Colors.blue),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                _toDate == null
+                                                    ? 'Đến ngày'
+                                                    : DateFormat('dd/MM/yyyy')
+                                                        .format(_toDate!),
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16.0),
+                            const Row(
                               children: [
                                 Text(
-                                  "Số liệu chi tiết",
+                                  "Tổng số hóa đơn theo trạng thái",
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black,
                                   ),
                                 ),
-                                Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.4,
-                                  height: 40,
-                                  child: DropdownButtonFormField<String>(
-                                    decoration: InputDecoration(
-                                      contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 10, vertical: 5),
-                                      labelStyle: TextStyle(
-                                          color: ThemeColor.black,
-                                          fontSize: 14),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                      ),
-                                      filled: true,
-                                      fillColor: ThemeColor.white,
-                                    ),
-                                    items: dataRequest.keys.map((String key) {
-                                      return DropdownMenuItem<String>(
-                                        value: key,
-                                        child: Text(key,
-                                            style:
-                                                const TextStyle(fontSize: 14)),
-                                      );
-                                    }).toList(),
-                                    onChanged: (String? value) {
-                                      if (value != null) {
-                                        setState(() {
-                                          model.selectedKey = value;
-                                          model.setRequestDays(
-                                              dataRequest[value]!);
-                                          model.setSelectedKey(value);
-                                        });
-                                      }
-                                    },
-                                    value: model.selectedKey,
-                                    style: const TextStyle(
-                                        fontSize: 14, color: Colors.black),
-                                    icon: const Icon(Icons.arrow_drop_down,
-                                        size: 20),
-                                    isDense: true,
-                                  ),
-                                ),
                               ],
                             ),
-                            const SizedBox(height: 16.0),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    CustomInfoBox(
-                                      title: 'Tổng tất cả',
-                                      value: model
-                                          .invoicetTotalReports!.totalInvoice
-                                          .toString(),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    CustomInfoBox(
-                                      title: 'Tổng trong ngày',
-                                      value: model.invoicetTotalReports!
-                                          .totalInvoiceReportInDate
-                                          .toString(),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 16.0),
+                            const SizedBox(height: 8.0),
                             Wrap(
                               spacing: 30.0,
                               runSpacing: 25.0,
@@ -157,91 +195,100 @@ class _DashboardInvoicesState extends State<DashboardInvoices> {
                                   width: 100,
                                   height: 100,
                                   title: 'Thành công',
-                                  value:
-                                      model.invoicetTotalReports?.success ?? 0,
+                                  value: model.totalSuccess.toInt(),
                                   color: getBorderColor(1),
                                 ),
                                 StatusCard(
                                   width: 100,
                                   height: 100,
                                   title: 'Đã gửi',
-                                  value: model.invoicetTotalReports?.sent ?? 0,
+                                  value: model.totalSent.toInt(),
                                   color: getBorderColor(2),
                                 ),
                                 StatusCard(
                                   width: 100,
                                   height: 100,
                                   title: 'Hoàn thành',
-                                  value:
-                                      model.invoicetTotalReports?.completed ??
-                                          0,
+                                  value: model.totalCompleted.toInt(),
                                   color: getBorderColor(4),
                                 ),
                                 StatusCard(
                                   width: 100,
                                   height: 100,
                                   title: 'Chờ phê duyệt',
-                                  value: model.invoicetTotalReports
-                                          ?.pendingApproval ??
-                                      0,
+                                  value: model.totalPendingApproval.toInt(),
                                   color: getBorderColor(3),
                                 ),
                                 StatusCard(
                                   width: 100,
                                   height: 100,
                                   title: 'Đang chờ',
-                                  value:
-                                      model.invoicetTotalReports?.pending ?? 0,
+                                  value: model.totalPending.toInt(),
                                   color: getBorderColor(6),
                                 ),
                                 StatusCard(
                                   width: 100,
                                   height: 100,
                                   title: 'Đang chờ thử lại',
-                                  value: model
-                                          .invoicetTotalReports?.retryPending ??
-                                      0,
+                                  value: model.totalRetryPending.toInt(),
                                   color: getBorderColor(7),
                                 ),
                                 StatusCard(
                                   width: 100,
                                   height: 100,
                                   title: 'Bản nháp',
-                                  value: model.invoicetTotalReports?.draft ?? 0,
+                                  value: model.totalDraft.toInt(),
                                   color: getBorderColor(0),
                                 ),
                                 StatusCard(
                                   width: 100,
                                   height: 100,
                                   title: 'Thất bại',
-                                  value:
-                                      model.invoicetTotalReports?.failed ?? 0,
+                                  value: model.totalFailed.toInt(),
                                   color: getBorderColor(5),
                                 ),
                                 StatusCard(
                                   width: 100,
                                   height: 100,
                                   title: 'Thay thế',
-                                  value:
-                                      model.invoicetTotalReports?.replaced ?? 0,
+                                  value: model.totalReplaced.toInt(),
                                   color: getBorderColor(8),
                                 ),
                               ],
                             ),
                             SizedBox(height: 16.0),
                             Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  model.requestDays.toString() +
-                                      " " +
-                                      "ngày gần nhất",
+                                  'Tổng cộng có ${model.totalInvoiceReportInDate.toInt()} hóa đơn',
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black,
                                   ),
                                 ),
+                                // ConstrainedBox(
+                                //   constraints: BoxConstraints(
+                                //     maxWidth: 150.0,
+                                //   ),
+                                //   child: DropdownButton<String>(
+                                //     isExpanded: true,
+                                //     value: InvoiceStatusListString.isNotEmpty
+                                //         ? InvoiceStatusListString[0]
+                                //         : null,
+                                //     items: InvoiceStatusListString.map(
+                                //         (String value) {
+                                //       return DropdownMenuItem<String>(
+                                //         value: value,
+                                //         child: Text(value),
+                                //       );
+                                //     }).toList(),
+                                //     onChanged: (String? newValue) {
+                                //       // Xử lý khi thay đổi giá trị
+                                //     },
+                                //   ),
+                                // ),
                               ],
                             ),
                             SizedBox(height: 8.0),
@@ -250,13 +297,6 @@ class _DashboardInvoicesState extends State<DashboardInvoices> {
                               child: ScopedModelDescendant<
                                   DashboardInvoiceViewModel>(
                                 builder: (context, child, model) {
-                                  // In ra giá trị maxInvoices, minInvoices và chartData
-                                  // print('Max Invoices: ${model.maxInvoices}');
-                                  // print('Min Invoices: ${model.minInvoices}');
-                                  // model.chartData.forEach((key, value) {
-                                  //   print(
-                                  //       'Key: $key, Value: ${value?.totalInvoiceReportInDate?.toDouble()}');
-                                  // });
                                   if (model.status == ViewStatus.Empty) {
                                     return const Center(
                                       child: Text(
@@ -282,18 +322,44 @@ class _DashboardInvoicesState extends State<DashboardInvoices> {
                                       ),
                                     );
                                   } else {
-                                    // Kiểm tra và xử lý giá trị bằng 0
-                                    double yMax = (model.maxInvoices ?? 0) ==
-                                            (model.minInvoices ?? 0)
-                                        ? (model.maxInvoices ?? 0) + 1
-                                        : (model.maxInvoices ?? 0);
-                                    double yMin = model.minInvoices ?? 0;
-                                    double yFrequency = (yMax + yMin) / 2;
-
-                                    if (yMax == 0 && yMin == 0) {
-                                      yMax = 1;
-                                      yFrequency = 1;
+                                    final List<String> dates = model
+                                        .dateReportPairs
+                                        .map((e) => e.key)
+                                        .toList();
+                                    final List<double> values = model
+                                        .dateReportPairs
+                                        .map((e) =>
+                                            e.value.totalInvoiceReportInDate
+                                                ?.toDouble() ??
+                                            0.0)
+                                        .toList();
+                                    if (values.every((value) => value == 0)) {
+                                      return const Center(
+                                        child: Text(
+                                          'Không có dữ liệu để hiển thị',
+                                          style: TextStyle(
+                                            color: Colors.blue,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      );
                                     }
+                                    final int numberOfPoints = dates.length;
+                                    final double frequency = numberOfPoints > 5
+                                        ? numberOfPoints / 5.0
+                                        : 1.0;
+
+                                    final double yMax = values.isNotEmpty
+                                        ? values
+                                            .where((v) => !v.isNaN)
+                                            .reduce((a, b) => a > b ? a : b)
+                                        : 1.0;
+
+                                    final double yMin = values.isNotEmpty
+                                        ? values
+                                            .where((v) => !v.isNaN)
+                                            .reduce((a, b) => a < b ? a : b)
+                                        : 0.0;
 
                                     return SizedBox(
                                       height:
@@ -307,10 +373,9 @@ class _DashboardInvoicesState extends State<DashboardInvoices> {
                                           ChartAxisLayer(
                                             settings: ChartAxisSettings(
                                               x: ChartAxisSettingsAxis(
-                                                frequency: 1.0,
-                                                max:
-                                                    (model.chartData.length - 1)
-                                                        .toDouble(),
+                                                frequency: frequency,
+                                                max: (numberOfPoints - 1)
+                                                    .toDouble(),
                                                 min: 0,
                                                 textStyle: TextStyle(
                                                   color: Colors.black
@@ -319,7 +384,7 @@ class _DashboardInvoicesState extends State<DashboardInvoices> {
                                                 ),
                                               ),
                                               y: ChartAxisSettingsAxis(
-                                                frequency: yFrequency,
+                                                frequency: 1,
                                                 max: yMax,
                                                 min: yMin,
                                                 textStyle: TextStyle(
@@ -329,21 +394,22 @@ class _DashboardInvoicesState extends State<DashboardInvoices> {
                                                 ),
                                               ),
                                             ),
-                                            labelX: (value) => model
-                                                .chartData.keys
-                                                .toList()[value.toInt()]!,
+                                            labelX: (value) {
+                                              int index = value.toInt();
+                                              return index < dates.length
+                                                  ? dates[index]
+                                                  : '';
+                                            },
                                             labelY: (value) =>
                                                 value.toInt().toString(),
                                           ),
                                           ChartLineLayer(
                                             items: List.generate(
-                                              model.chartData.length,
+                                              numberOfPoints,
                                               (index) => ChartLineDataItem(
-                                                value: model.chartData.values
-                                                        .toList()[index]
-                                                        ?.totalInvoiceReportInDate
-                                                        ?.toDouble() ??
-                                                    0.0,
+                                                value: values[index].isNaN
+                                                    ? 0.0
+                                                    : values[index],
                                                 x: index.toDouble(),
                                               ),
                                             ),

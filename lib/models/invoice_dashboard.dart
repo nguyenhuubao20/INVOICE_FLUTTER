@@ -1,6 +1,6 @@
 //report
 class InvoiceReport {
-  int? totalInvoice;
+  DateTime? date;
   int? totalInvoiceReportInDate;
   int? draft;
   int? success;
@@ -13,7 +13,7 @@ class InvoiceReport {
   int? replaced;
 
   InvoiceReport({
-    this.totalInvoice,
+    this.date,
     this.totalInvoiceReportInDate,
     this.draft,
     this.success,
@@ -28,7 +28,7 @@ class InvoiceReport {
 
   factory InvoiceReport.fromJson(Map<String, dynamic> json) {
     return InvoiceReport(
-      totalInvoice: json['totalInvoice'],
+      date: json['date'] != null ? DateTime.parse(json['date']) : null,
       totalInvoiceReportInDate: json['totalInvoiceReportInDate'],
       draft: json['draft'],
       success: json['success'],
@@ -44,7 +44,7 @@ class InvoiceReport {
 
   Map<String, dynamic> toJson() {
     return {
-      'totalInvoice': totalInvoice,
+      'date': date?.toIso8601String(),
       'totalInvoiceReportInDate': totalInvoiceReportInDate,
       'draft': draft,
       'success': success,
@@ -57,10 +57,55 @@ class InvoiceReport {
       'replaced': replaced,
     };
   }
+
+  static InvoiceReport empty() {
+    return InvoiceReport(
+      date: null,
+      totalInvoiceReportInDate: 0,
+      draft: 0,
+      success: 0,
+      sent: 0,
+      pendingApproval: 0,
+      completed: 0,
+      failed: 0,
+      pending: 0,
+      retryPending: 0,
+      replaced: 0,
+    );
+  }
+
+  InvoiceReport copyWith({
+    DateTime? date,
+    int? totalInvoiceReportInDate,
+    int? draft,
+    int? success,
+    int? sent,
+    int? pendingApproval,
+    int? completed,
+    int? failed,
+    int? pending,
+    int? retryPending,
+    int? replaced,
+  }) {
+    return InvoiceReport(
+      date: date ?? this.date,
+      totalInvoiceReportInDate:
+          totalInvoiceReportInDate ?? this.totalInvoiceReportInDate,
+      draft: draft ?? this.draft,
+      success: success ?? this.success,
+      sent: sent ?? this.sent,
+      pendingApproval: pendingApproval ?? this.pendingApproval,
+      completed: completed ?? this.completed,
+      failed: failed ?? this.failed,
+      pending: pending ?? this.pending,
+      retryPending: retryPending ?? this.retryPending,
+      replaced: replaced ?? this.replaced,
+    );
+  }
 }
 
 class InvoicePaymentReport {
-  int? totalInvoiceReport;
+  DateTime? date;
   int? totalInvoiceReportInDate;
   double? totalTaxAmountReport;
   double? totalAmountAfterTaxReport;
@@ -70,7 +115,7 @@ class InvoicePaymentReport {
   double? totalAmountReport;
 
   InvoicePaymentReport({
-    this.totalInvoiceReport,
+    this.date,
     this.totalInvoiceReportInDate,
     this.totalTaxAmountReport,
     this.totalAmountAfterTaxReport,
@@ -80,39 +125,33 @@ class InvoicePaymentReport {
     this.totalAmountReport,
   });
 
-  InvoicePaymentReport.empty()
-      : totalInvoiceReport = 0,
-        totalInvoiceReportInDate = 0,
-        totalTaxAmountReport = 0.0,
-        totalAmountAfterTaxReport = 0.0,
-        totalSaleAmountReport = 0.0,
-        totalDiscountAmountReport = 0.0,
-        totalAmountWithoutTaxReport = 0.0,
-        totalAmountReport = 0.0;
-
   factory InvoicePaymentReport.fromJson(Map<String, dynamic> json) {
     return InvoicePaymentReport(
-      totalInvoiceReport: json['totalInvoiceReport'],
-      totalInvoiceReportInDate: json['totalInvoiceReportInDate'],
-      totalTaxAmountReport: json['totalTaxAmountReport'],
-      totalAmountAfterTaxReport: json['totalAmountAfterTaxReport'],
-      totalSaleAmountReport: json['totalSaleAmountReport'],
-      totalDiscountAmountReport: json['totalDiscountAmountReport'],
-      totalAmountWithoutTaxReport: json['totalAmountWithoutTaxReport'],
-      totalAmountReport: json['totalAmountReport'],
+      date: json['date'] != null ? DateTime.parse(json['date']) : null,
+      totalInvoiceReportInDate: json['totalInvoiceReportInDate'] as int?,
+      totalTaxAmountReport: (json['totalTaxAmountReport'] as num?)?.toDouble(),
+      totalAmountAfterTaxReport:
+          (json['totalAmountAfterTaxReport'] as num?)?.toDouble(),
+      totalSaleAmountReport:
+          (json['totalSaleAmountReport'] as num?)?.toDouble(),
+      totalDiscountAmountReport:
+          (json['totalDiscountAmountReport'] as num?)?.toDouble(),
+      totalAmountWithoutTaxReport:
+          (json['totalAmountWithoutTaxReport'] as num?)?.toDouble(),
+      totalAmountReport: (json['totalAmountReport'] as num?)?.toDouble(),
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'totalInvoiceReport': totalInvoiceReport,
-      'totalInvoiceReportInDate': totalInvoiceReportInDate,
-      'totalTaxAmountReport': totalTaxAmountReport,
-      'totalAmountAfterTaxReport': totalAmountAfterTaxReport,
-      'totalSaleAmountReport': totalSaleAmountReport,
-      'totalDiscountAmountReport': totalDiscountAmountReport,
-      'totalAmountWithoutTaxReport': totalAmountWithoutTaxReport,
-      'totalAmountReport': totalAmountReport,
-    };
+  static InvoicePaymentReport empty() {
+    return InvoicePaymentReport(
+      date: null,
+      totalInvoiceReportInDate: 0,
+      totalTaxAmountReport: 0.0,
+      totalAmountAfterTaxReport: 0.0,
+      totalSaleAmountReport: 0.0,
+      totalDiscountAmountReport: 0.0,
+      totalAmountWithoutTaxReport: 0.0,
+      totalAmountReport: 0.0,
+    );
   }
 }

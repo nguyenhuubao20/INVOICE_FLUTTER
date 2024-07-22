@@ -1,84 +1,130 @@
-import 'dart:developer';
-
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:invoice/enums/date_format.dart';
+import 'package:invoice/api/brand_api.dart';
 import 'package:invoice/view_models/account_view_model.dart';
+import 'package:invoice/widgets/other_dialogs/dialog.dart';
 
 import '../../api/organization_api.dart';
 import '../../enums/view_status.dart';
 import '../../models/invoice_dashboard.dart';
-import '../../widgets/other_dialogs/dialog.dart';
 import '../base_view_model.dart';
+import '../invoice_view_model.dart';
 
 class DashboardInvoiceViewModel extends BaseViewModel {
   final AccountViewModel _accountViewModel = Get.find<AccountViewModel>();
-  InvoiceReport? invoicetTotalReports;
+  final InvoiceViewModel _invoiceViewModel = Get.find<InvoiceViewModel>();
 
-  double maxInvoices = 0;
-  double minInvoices = 0;
+  DateTime? selectedFromDate;
+  DateTime? selectedToDate;
 
-  String selectedKey = 'Hôm qua';
-  int requestDays = 2;
-  List<String> dateData = [];
-  Map<String?, InvoiceReport?> chartData = {};
+  double totalDraft = 0.0, totalSuccess = 0.0, totalSent = 0.0;
+  double totalPendingApproval = 0.0, totalCompleted = 0.0;
+  double totalFailed = 0.0, totalPending = 0.0, totalRetryPending = 0.0;
+  double totalReplaced = 0.0;
+  double totalInvoiceReportInDate = 0.0;
 
-  void setRequestDays(int requestDays) {
-    this.requestDays = requestDays;
+  List<InvoiceReport>? invoiceReports;
+  final DateFormat formatter = DateFormat('dd/MM');
+  Map<String?, double> chartData = {};
+  List<MapEntry<String, InvoiceReport>> dateReportPairs = [];
+
+  void setSelectedFromDate(DateTime? fromDate) {
+    selectedFromDate = fromDate;
+    if (selectedFromDate != null && selectedToDate == null) {
+      return;
+    } else {
+      if (selectedToDate!.isBefore(selectedFromDate!)) {
+        showMessageDialog(
+            title: 'Thông báo',
+            message: 'Ngày kết thúc không thể nhỏ hơn ngày bắt đầu');
+      } else {
+        getInvoicesDashboard();
+      }
+    }
+    notifyListeners();
+  }
+
+  void setSelectedToDate(DateTime? toDate) {
+    selectedToDate = toDate;
+    if (selectedToDate != null && selectedFromDate != null) {
+      if (selectedToDate!.isBefore(selectedFromDate!)) {
+        showMessageDialog(
+            title: 'Thông báo',
+            message: 'Ngày kết thúc không thể nhỏ hơn ngày bắt đầu');
+      } else {
+        getInvoicesDashboard();
+      }
+    }
+    notifyListeners();
+  }
+
+  void reset() {
+    // maxInvoices = 0;
+    // minInvoices = 0;
+    // selectedFromDate = null;
+    // selectedToDate = null;
+    totalDraft = 0.0;
+    totalSuccess = 0.0;
+    totalSent = 0.0;
+    totalPendingApproval = 0.0;
+    totalCompleted = 0.0;
+    totalFailed = 0.0;
+    totalPending = 0.0;
+    totalRetryPending = 0.0;
+    totalReplaced = 0.0;
+    totalInvoiceReportInDate = 0.0;
+    notifyListeners();
+  }
+
+  Future<void> removeAll() async {
+    selectedFromDate = null;
+    selectedToDate = null;
+
+    totalDraft = 0.0;
+    totalSuccess = 0.0;
+    totalSent = 0.0;
+    totalPendingApproval = 0.0;
+    totalCompleted = 0.0;
+    totalFailed = 0.0;
+    totalPending = 0.0;
+    totalRetryPending = 0.0;
+    totalReplaced = 0.0;
+    totalInvoiceReportInDate = 0.0;
+
+    invoiceReports = null;
     chartData.clear();
-    getLastRequestDays();
-    getInvoiceReporPaymenttByOrganizationDashBoard();
-    notifyListeners();
+    dateReportPairs.clear();
   }
 
-  void setSelectedKey(String key) {
-    selectedKey = key;
-    notifyListeners();
-  }
-
-  void setMinMaxInvoices(double min, double max) {
-    minInvoices = min;
-    maxInvoices = max;
-    notifyListeners();
-  }
-
-  List<String> getLastRequestDays() {
-    dateData.clear();
-    if (requestDays == 0) {
-      return [];
-    }
-
-    DateTime now = DateTime.now();
-    DateFormat formatter = DateFormat('yyyy-MM-dd');
-
-    for (int i = requestDays - 1; i >= 0; i--) {
-      DateTime date = now.subtract(Duration(days: i));
-      String formattedDate = formatter.format(date);
-      dateData.add(formattedDate);
-    }
-    return dateData;
-  }
-
-  Future<void> getInvoiceReporPaymenttByOrganizationDashBoard() async {
+  Future<void> getInvoicesDashboard() async {
     try {
       setState(ViewStatus.Loading);
       await Future.delayed(const Duration(seconds: 1));
-      DateFormat formatter = DateFormat('yyyy-MM-dd');
-
-      for (String? dateString in dateData) {
-        DateTime? date;
-        if (dateString != null) {
-          date = formatter.parse(dateString);
-        }
-        var invoiceReports =
-            await OrganizationAPI().getInvoiceReportByOrganization(date, date);
-        if (invoiceReports != null) {
-          final dateFormat = DateFormatVN.formatDateDDMM("${dateString}");
-          chartData[dateFormat] = invoiceReports;
+      if (_accountViewModel.account?.role == 2) {
+        invoiceReports = await OrganizationAPI().getOrganizationReportInvoices(
+            selectedFromDate,
+            selectedToDate,
+            _invoiceViewModel.selectedStoreId);
+      } else if (_accountViewModel.account?.role == 0) {
+        invoiceReports = await BrandAPI().getBrandReportInvoices(
+            selectedFromDate,
+            selectedToDate,
+            _invoiceViewModel.selectedOrganizationId);
+      }
+      chartData.clear();
+      dateReportPairs.clear();
+      reset();
+      for (var report in invoiceReports!) {
+        DateTime? reportDate = report.date;
+        if (reportDate != null) {
+          String formattedDate = formatter.format(reportDate);
+          double totalDraftValue =
+              report.totalInvoiceReportInDate?.toDouble() ?? 0.0;
+          chartData[formattedDate] = totalDraftValue;
+          dateReportPairs.add(MapEntry(formattedDate, report));
         }
       }
-      setMinMaxInvoices(getMinTotalInvoicesInDate().toDouble(),
-          getMaxTotalInvoicesInDate().toDouble());
+      getTotalInvoiceReportDetails(invoiceReports);
       setState(ViewStatus.Completed);
       notifyListeners();
     } catch (e) {
@@ -86,58 +132,20 @@ class DashboardInvoiceViewModel extends BaseViewModel {
     }
   }
 
-  Future<void> getInvoiceReportByOrganization({
-    DateTime? fromDate,
-    DateTime? toDate,
-    String errorMessage = 'Failed to load invoice list',
-  }) async {
-    try {
-      setState(ViewStatus.Loading);
-      await Future.delayed(const Duration(seconds: 1));
-      if (_accountViewModel.account?.role == 2) {
-        invoicetTotalReports = await OrganizationAPI()
-            .getInvoiceReportByOrganization(fromDate, toDate);
-        if (invoicetTotalReports != null) {
-          setState(ViewStatus.Completed);
-          notifyListeners();
-        } else {
-          setState(ViewStatus.Error, 'Invoice list not found');
-        }
-      } else {
-        showAlertDialog(
-          title: 'Error',
-          content: 'You have no access to load this data',
-        );
-      }
-    } catch (e, stackTrace) {
-      log('Error loading invoice report: $e', stackTrace: stackTrace);
-      setState(ViewStatus.Error, errorMessage);
-    }
-  }
+  void getTotalInvoiceReportDetails(List<InvoiceReport>? invoiceDetail) {
+    if (invoiceDetail == null || invoiceDetail.isEmpty) return;
 
-  double getMaxTotalInvoicesInDate() {
-    int max = 0;
-    for (var entry in chartData.entries) {
-      if (entry.value != null) {
-        int totalAmount = entry.value!.totalInvoiceReportInDate ?? 0;
-        if (totalAmount > max) {
-          max = totalAmount;
-        }
-      }
+    for (var report in invoiceDetail) {
+      totalDraft += report.draft ?? 0;
+      totalSuccess += report.success ?? 0;
+      totalSent += report.sent ?? 0;
+      totalPendingApproval += report.pendingApproval ?? 0;
+      totalCompleted += report.completed ?? 0;
+      totalFailed += report.failed ?? 0;
+      totalPending += report.pending ?? 0;
+      totalRetryPending += report.retryPending ?? 0;
+      totalReplaced += report.replaced ?? 0;
+      totalInvoiceReportInDate += report.totalInvoiceReportInDate ?? 0;
     }
-    return max.toDouble();
-  }
-
-  double getMinTotalInvoicesInDate() {
-    int min = 0;
-    for (var entry in chartData.entries) {
-      if (entry.value != null) {
-        int totalAmount = entry.value!.totalInvoiceReportInDate ?? 0;
-        if (totalAmount < min) {
-          min = totalAmount;
-        }
-      }
-    }
-    return min.toDouble();
   }
 }

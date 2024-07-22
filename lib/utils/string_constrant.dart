@@ -33,4 +33,6 @@ class Message {
   static const String approvalInvoiceError = "Duyệt hóa đơn thất bại";
   static const String approvalInvoiceNoAccess =
       "Bạn không có quyền duyệt hóa đơn";
+  static const String errorLoadInvoicePayment = "Thất bại khi tải danh sách thanh toán";
+  static const String errorLoadInvoicePaymentContent = "Danh sách thanh toán bị lỗi";
 }

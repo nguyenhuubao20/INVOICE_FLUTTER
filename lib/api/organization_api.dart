@@ -35,14 +35,18 @@ class OrganizationAPI {
     }
   }
 
-  Future<InvoiceReport?> getInvoiceReportByOrganization(
-      DateTime? fromDate, DateTime? toDate) async {
+  Future<List<InvoiceReport>> getOrganizationReportInvoices(
+      DateTime? fromDate, DateTime? toDate, String? storeId) async {
     try {
       String? organizationId = await getOrganizationId();
 
       var params = {
         'id': organizationId,
       };
+
+      if (storeId != null) {
+        params['storeId'] = storeId;
+      }
 
       if (fromDate != null) {
         params['fromDate'] = DateFormat('yyyy-MM-dd').format(fromDate);
@@ -53,29 +57,39 @@ class OrganizationAPI {
       }
 
       final res = await request.get(
-        'organizations/$organizationId/invoice-report',
+        'organizations/$organizationId/invoice-report-in-date',
         queryParameters: params,
       );
 
       if (res.statusCode == 200) {
-        InvoiceReport invoiceReport = InvoiceReport.fromJson(res.data);
-        return invoiceReport;
+        Map<String, dynamic> data = res.data;
+        List<dynamic> jsonList = data['items'];
+        List<InvoiceReport> reports =
+            jsonList.map((item) => InvoiceReport.fromJson(item)).toList();
+        return reports;
       } else {
         throw Exception('Failed to load invoice report: ${res.statusCode}');
       }
     } catch (e, stackTrace) {
       print('Error during getting invoice report: $e');
-      return null;
+      return [];
     }
   }
 
-  Future<InvoicePaymentReport?> getInvoiceReportPaymentByOrganization(
-      DateTime? fromDate, DateTime? toDate) async {
+  Future<List<InvoicePaymentReport>> getOrganizationReportRevenue(
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? storeId,
+  ) async {
     try {
       String? organizationId = await getOrganizationId();
       var params = {
         'id': organizationId,
       };
+
+      if (storeId != null) {
+        params['storeId'] = storeId;
+      }
 
       if (fromDate != null) {
         params['fromDate'] = DateFormat('yyyy-MM-dd').format(fromDate);
@@ -86,22 +100,23 @@ class OrganizationAPI {
       }
 
       final res = await request.get(
-        'organizations/$organizationId/invoice-payment-report',
+        'organizations/$organizationId/invoice-payment-report-in-date',
         queryParameters: params,
       );
 
       if (res.statusCode == 200) {
-        InvoicePaymentReport invoicePaymentReport =
-            InvoicePaymentReport.fromJson(res.data);
-
-        return invoicePaymentReport;
+        Map<String, dynamic> data = res.data;
+        List<dynamic> jsonList = data['items'];
+        List<InvoicePaymentReport> reports = jsonList
+            .map((item) => InvoicePaymentReport.fromJson(item))
+            .toList();
+        return reports;
       } else {
         throw Exception('Failed to load invoice report: ${res.statusCode}');
       }
     } catch (e, stackTrace) {
-      print('Error during getting invoice report: $e');
-      print(stackTrace);
-      return null;
+      print('Exception: $e');
+      return [];
     }
   }
 }

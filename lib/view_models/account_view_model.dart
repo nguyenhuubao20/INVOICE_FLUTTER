@@ -3,6 +3,7 @@ import 'package:invoice/models/account.dart';
 import 'package:invoice/utils/request.dart';
 import 'package:invoice/utils/share_pref.dart';
 import 'package:invoice/view_models/base_view_model.dart';
+import 'package:invoice/view_models/dashboard_view_model/dashboard_invoices_view_model.dart';
 
 import '../api/account_api.dart';
 import '../enums/view_status.dart';
@@ -77,6 +78,7 @@ class AccountViewModel extends BaseViewModel {
       await removeALL();
       await Get.find<StartUpViewModel>().handleStartUpLogic();
       await Get.find<InvoiceViewModel>().removeAll();
+      await Get.find<DashboardInvoiceViewModel>().removeAll();
       hideDialog();
     }
   }

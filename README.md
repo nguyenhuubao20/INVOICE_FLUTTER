@@ -4,20 +4,20 @@ A modern Flutter application for managing invoices and tracking business revenue
 
 ## 📱 Screenshots
 
-Login Screen:
-https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/login_screen.png
+### Login Screen:
+![Login Screen](https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/login_screen.png)
 
-Home Screen: 
-https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/home_screen.png
+### Home Screen:
+![Home Screen](https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/home_screen.png)
 
-Invoice Detail Screen:
-https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/invoice_detail_screen.png
+### Invoice Detail Screen:
+![Invoice Detail Screen](https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/invoice_detail_screen.png)
 
-Dashboard Screen:
-https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/dashboard_screen.png
+### Dashboard Screen:
+![Dashboard Screen](https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/dashboard_screen.png)
 
-Setting Screen:
-https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/setting_screen.png
+### Setting Screen:
+![Setting Screen](https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/setting_screen.png)
 
 ## ✨ Features
 
@@ -25,7 +25,6 @@ https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main
 - 📝 **Invoice Management**: 
   - Create, approval invoices
   - Custom invoice templates
-  - PDF export functionality
 - 💰 **Financial Tracking**:
   - Monthly/yearly revenue analysis
 - 🔍 **Advanced Search**: Quick access to invoice history
@@ -66,6 +65,7 @@ flutter run
 - **State Management**: scoped_model
 - **Database**: Firebase
 - **API Integration**: REST API
+- **Pattern**: MVVM
 - **Charts**: mrx_charts
 - **Local Storage**: shared_preferences
 - **Dependency Injection**: get_it

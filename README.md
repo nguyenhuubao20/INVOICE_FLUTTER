@@ -42,7 +42,7 @@ A modern Flutter application for managing invoices and tracking business revenue
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/INVOICE_FLUTTER.git
+git clone https://github.com/nguyenhuubao20/INVOICE_FLUTTER.git
 ```
 
 2. Navigate to project directory

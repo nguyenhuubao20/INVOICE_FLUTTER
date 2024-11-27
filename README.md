@@ -5,19 +5,19 @@ A modern Flutter application for managing invoices and tracking business revenue
 ## 📱 Screenshots
 
 ### Login Screen:
-![Login Screen](https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/login_screen.png)
+<img src="https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/login_screen.png" width="500"/>
 
 ### Home Screen:
-![Home Screen](https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/home_screen.png)
+<img src="https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/home_screen.png" width="500"/>
 
 ### Invoice Detail Screen:
-![Invoice Detail Screen](https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/invoice_detail_screen.png)
+<img src="https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/invoice_detail_screen.png" width="500"/>
 
 ### Dashboard Screen:
-![Dashboard Screen](https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/dashboard_screen.png)
+<img src="https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/dashboard_screen.png" width="500"/>
 
 ### Setting Screen:
-![Setting Screen](https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/setting_screen.png)
+<img src="https://raw.githubusercontent.com/nguyenhuubao20/INVOICE_FLUTTER/refs/heads/main/assets/images/setting_screen.png" width="500"/>
 
 ## ✨ Features
 
